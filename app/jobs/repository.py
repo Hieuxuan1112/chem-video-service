@@ -527,3 +527,6 @@ class JobRepository:
             .fetchall()
         )
         return [self._row_to_checkpoint(r) for r in rows]
+
+    def ping(self) -> None:
+        self._conn().execute("SELECT 1").fetchone()

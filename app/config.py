@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     poll_interval_s: float = 1.0
     scheduled_retry_delays_s: tuple[float, ...] = (60.0, 300.0)
     run_embedded_worker: bool = True
+    worker_shutdown_grace_s: float = 5.0  # an unfinished job is left to lease expiry
 
     # Budgets (spec §9.3)
     warning_budget_usd: float = 3.00
