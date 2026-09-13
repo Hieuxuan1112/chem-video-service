@@ -1,7 +1,7 @@
 # AI Chemistry Video Request Service — Design Spec
 
 - **Date:** 2026-09-13
-- **Status:** Approved in review (Parts 1–4), pending final read-through of this document
+- **Status:** Approved (Parts 1–4 and §14 refinements). Revision 2 applies the budget correction and a consistency pass (§15).
 - **Scope source:** `Agentic_Backend_Challenge_AI_Chemistry_Video_Request_Service.pdf` (Growtrics coding challenge)
 - **Implementation state at time of writing:** nothing implemented. Only throw-away feasibility spikes were run (see §2).
 
@@ -34,7 +34,12 @@ The project is done when:
 5. README commands have been executed from a clean clone.
 6. `docker build` succeeds and the demo runs inside the container.
 
-Development spend on paid APIs is capped at **USD 3.00 in total** (dev + calibration + live eval + samples).
+Project spend on paid APIs has two limits, enforced before every paid call (§9.3). They cover everything: development live checks, calibration, the 3×5 live reliability evaluation, retries and re-runs, and sample generation.
+
+- **Warning at USD 3.00** (`WARNING_BUDGET_USD`): reported once, spending continues.
+- **Hard cap at USD 5.00** (`HARD_PROJECT_CAP_USD`): no paid call starts if it could cross the cap.
+
+Each job additionally has a paid-call guardrail of **USD 0.20** (`COST_JOB_BUDGET_USD`).
 
 ## 2. Evidence gathered before design (spikes, not project code)
 
@@ -43,7 +48,7 @@ Development spend on paid APIs is capped at **USD 3.00 in total** (dev + calibra
 | `pip install manim` on Windows, Python 3.12 | Installed in ~48 s (manim 0.21.0) | Manim is viable on the dev machine |
 | Manim 720p30, 10 s scene with `MarkupText` subscripts | 14 s wall time, ~8 s of it process start-up; H₂O subscript renders without LaTeX | Render all scenes in one subprocess; no LaTeX dependency |
 | Frame inspection of that render | Manim fell back to a Windows serif font; RGB interpolation RED→PURPLE produced a muddy gradient; content clustered in the upper half | Bundle a font; designed discrete palette; explicit layout grid |
-| `gemini-2.5-flash-preview-tts`, one sentence | 5.53 s audio, ~138 audio tokens → **≈25 audio tokens/s** | TTS cost model |
+| `gemini-2.5-flash-preview-tts`, one sentence | 5.53 s audio, ~138 audio tokens → **≈25 audio tokens/s** (a single 5.5 s sample; to be re-measured from ledger data on full videos) | TTS cost model |
 | `edge-tts` 7.2.8 | Works, MP3 output | Usable as independent fallback voice provider |
 | ffmpeg 8.1 (gyan full build) filters | `ass`, `subtitles` (libass), `loudnorm`, `ebur128`, `silencedetect`, `volumedetect`, `blackdetect`, `freezedetect` present | Deterministic media QA with ffmpeg only |
 | Starlette 0.50 `FileResponse` | Supports HTTP `Range` | Seekable video playback without custom code |
@@ -74,7 +79,7 @@ Cost ledger + event timeline (SQLite) · JSON logs
 Rejected alternatives (recorded in `docs/DECISIONS.md`):
 
 - **LLM writes Manim code.** Compiles-but-looks-wrong output, sandboxing required, expensive retry loop, unstable across runs.
-- **Text-to-video (Veo 3.1) or image-per-slide.** USD 3.75–30 per 75 s video; unverifiable chemistry and garbled labels.
+- **Text-to-video (Veo 3.1) or image-per-slide.** USD 3.75–30 per 75 s video, using Veo 3.1 Lite $0.05/s and Standard $0.40/s from the Gemini pricing page as read on 2026-09-13 (re-verify before publication); unverifiable chemistry and garbled labels.
 - **Celery/Redis/Kafka.** The SQLite queue gives durability and atomic claiming with zero added infrastructure, and maps directly to Cloud Tasks / Pub/Sub later.
 - **FastAPI `BackgroundTasks`.** Loses jobs on restart and cannot bound concurrency.
 - **LangGraph for the pipeline.** A fixed stage sequence with one bounded loop gains nothing from a graph runtime, and its checkpointer would duplicate the job store.
@@ -142,15 +147,17 @@ CREATE TABLE jobs (
   topic_id TEXT NOT NULL,
   status TEXT NOT NULL,                -- queued | running | succeeded | failed
   stage TEXT,
-  attempt INTEGER NOT NULL DEFAULT 0,  -- monotonic fencing token, never reset
-  lease_claims INTEGER NOT NULL DEFAULT 0,  -- claims since last enqueue; reset on retry
-  scheduled_retries INTEGER NOT NULL DEFAULT 0,
+  attempt INTEGER NOT NULL DEFAULT 0,  -- monotonic fencing token: +1 on every claim, never reset
+  lease_claims INTEGER NOT NULL DEFAULT 0,  -- claims since the job last entered `queued`;
+                                       -- reset to 0 by scheduled retry and by manual retry
+  scheduled_retries INTEGER NOT NULL DEFAULT 0,  -- automatic re-queues used; reset only by manual retry
   worker_id TEXT,
   lease_until REAL,                    -- unix epoch seconds (UTC)
   not_before REAL,                     -- earliest claim time for scheduled retries
   generation_source TEXT,              -- llm | curated_fallback
   fallback_reason TEXT,
   error_code TEXT, error_cause TEXT, error_message TEXT, retryable INTEGER,
+                                       -- terminal error when failed; last error while a scheduled retry is pending
   idempotency_key TEXT UNIQUE,
   request_fingerprint TEXT,
   pipeline_version TEXT NOT NULL,
@@ -172,18 +179,38 @@ CREATE TABLE stage_checkpoints (
 );
 
 CREATE TABLE cost_entries (
-  id INTEGER PRIMARY KEY AUTOINCREMENT, job_id TEXT, attempt INTEGER, ts REAL NOT NULL,
-  stage TEXT, operation TEXT NOT NULL,             -- writer | critic | tts | asr | render_compute
-  provider TEXT NOT NULL, model TEXT, status TEXT NOT NULL,   -- ok | error
-  units_json TEXT NOT NULL,                        -- input_tokens, output_tokens, audio_seconds, characters, cpu_seconds
-  usd REAL NOT NULL, cost_source TEXT NOT NULL,    -- actual | estimated | free
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  job_id TEXT,                                     -- NULL for calibration / live checks outside jobs
+  attempt INTEGER, ts REAL NOT NULL, settled_at REAL,
+  stage TEXT, operation TEXT NOT NULL,             -- writer | critic | tts | asr | calibration_* | render_compute
+  provider TEXT NOT NULL, model TEXT,
+  status TEXT NOT NULL,                            -- reserved | ok | error
+  billable INTEGER NOT NULL,                       -- 1 = real provider call; 0 = production estimate (render_compute)
+  projected_usd REAL NOT NULL,                     -- upper-bound projection reserved before the call
+  usd REAL,                                        -- settled cost (NULL while reserved)
+  cost_source TEXT,                                -- actual | estimated | free (set at settlement)
+  units_json TEXT NOT NULL DEFAULT '{}',           -- input_tokens, output_tokens, audio_seconds, characters, cpu_seconds
+  error_code TEXT,                                 -- provider error class for status=error
   pricing_version TEXT NOT NULL
 );
 CREATE INDEX cost_entries_ts ON cost_entries(ts);
+CREATE INDEX cost_entries_job ON cost_entries(job_id);
+
+CREATE TABLE budget_state (                        -- once-only budget notifications across processes
+  key TEXT PRIMARY KEY,                            -- e.g. "project_warning_emitted"
+  value TEXT NOT NULL, ts REAL NOT NULL
+);
 ```
 
 Connection settings: `journal_mode=WAL`, `busy_timeout=5000`, `synchronous=NORMAL`,
 `foreign_keys=ON`. Each thread uses its own connection.
+
+**Where the tables live:**
+- `jobs`, `job_events` and `stage_checkpoints` live in `DATABASE_PATH` (default `data/app.sqlite`).
+- `cost_entries` and `budget_state` live in `LEDGER_DB_PATH`, which defaults to the same file. It is the single project spend ledger shared by the API/worker, live tests, calibration and evaluation.
+- Tests with fake providers point both paths at temporary files.
+- Any command that can make a paid call (live tests, `calibrate_gates.py`, `reliability_eval.py --mode live`, the API with a real key) refuses to start unless `LEDGER_DB_PATH` resolves to the persistent project ledger. Running against a scratch ledger cannot bypass the hard cap.
+- The ledger file is never deleted.
 
 ### 4.3 Atomic claim
 
@@ -263,8 +290,38 @@ Retry layers, innermost first:
 
 1. **Provider call:** 429 / 5xx / timeout → exponential backoff with full jitter (base 1 s, factor 2, cap 20 s, max 3 attempts). 401 / 403 / 400 → no retry.
 2. **Stage-local:** TTS clip re-synthesis (§7.3), one scene re-render (§8.2), one assembly re-run (§8.4).
-3. **Scheduled job retry:** a retryable stage failure moves the job `running → queued` with `not_before = now + [60 s, 300 s][scheduled_retries]` while `scheduled_retries < 2`; it resumes from checkpoints (§6). When exhausted, the job moves to `failed`.
-4. **Manual retry:** `POST /v1/videos/{id}/retry` on `failed` + `retryable=true` executes `UPDATE … SET status='queued', lease_claims=0, scheduled_retries=0, error_*=NULL WHERE id=:id AND status='failed' AND retryable=1`. If two retries race, exactly one succeeds; the other gets `409 NOT_RETRYABLE`.
+3. **Scheduled job retry.** Raised only by a live lease holder whose stage failed with a retryable classification. While `scheduled_retries < 2`, a fenced update:
+   ```sql
+   UPDATE jobs SET status='queued', stage=NULL, worker_id=NULL, lease_until=NULL,
+          lease_claims=0, scheduled_retries=scheduled_retries+1,
+          not_before=:now + :delay,   -- 60 s for the first, 300 s for the second
+          error_code=:code, error_cause=:cause, error_message=:msg, retryable=1, updated_at=:now
+   WHERE id=:id AND worker_id=:w AND attempt=:a AND status='running';
+   ```
+   The job resumes from checkpoints (§6). With `scheduled_retries = 2` already used, the fenced update goes to `failed` instead.
+4. **Manual retry.** `POST /v1/videos/{id}/retry` on `failed` + `retryable=1`:
+   ```sql
+   UPDATE jobs SET status='queued', stage=NULL, worker_id=NULL, lease_until=NULL, not_before=NULL,
+          lease_claims=0, scheduled_retries=0,
+          error_code=NULL, error_cause=NULL, error_message=NULL, retryable=NULL, updated_at=:now
+   WHERE id=:id AND status='failed' AND retryable=1;
+   ```
+   If two retries race, exactly one succeeds; the other gets `409 NOT_RETRYABLE`. It also resumes from checkpoints.
+
+**How the counters relate:**
+
+| Counter | Incremented by | Reset by | Bounds |
+|---|---|---|---|
+| `attempt` | every claim, including lease reclaims | never | fencing token only |
+| `lease_claims` | every claim | entering `queued` (scheduled or manual retry) | `max_claims = 3` per queue entry; the sweep enforces it |
+| `scheduled_retries` | each automatic re-queue | manual retry only | 2 |
+
+Without human action a job is claimed at most (2 + 1) × 3 = 9 times.
+
+**Worker loss vs. scheduled retry.** These are different paths.
+- **Worker loss** is detected only through lease expiry. Below `max_claims`, the job is reclaimed in place (`running → running`, `attempt + 1`). At `max_claims`, the sweep fails it with `WORKER_LOST`.
+- The sweep **never** schedules an automatic retry. Repeatedly losing workers on the same job indicates a poison job, so a human decides via manual retry.
+- **Scheduled retry** is only for classified retryable stage errors reported by a worker that still holds the lease.
 
 LLM content failures never fail a job; they route to the curated fallback (§5.6).
 
@@ -376,7 +433,7 @@ Prompt files carry a version that is recorded in checkpoints and manifests.
 | **G1 Schema** | Pydantic strict validation: types, enums, lengths, counts. |
 | **G2a Rules** | Narration 25–60 words per scene; estimated total duration (words ÷ 2.5 w/s + padding) 45–100 s; scene 0 is `title_card`; last scene is `key_points`; visuals ⊆ `allowed_visuals`; `required_visuals` present; no two scenes with identical visual spec; every `required_fact` detected; no misconception pattern matches. |
 | **G2b Chemistry consistency** | `log_ratio` \|Δ\| ∈ {1,2}; `atom_shells` elements ⊆ pack `allowed_elements`; `electron_sharing` molecule ⊆ `allowed_molecules`; `electron_transfer` compound ⊆ `allowed_compounds`, and its donor is a metal and acceptor a non-metal (holds by construction of the enum, asserted anyway). |
-| **G2c Claims in narration** | Checkers split narration into clauses (on `.;` and `while`, `whereas`, `but`) and verify: **ph_classification** (a pH number with acidic/neutral/basic word → class derived from the number); **ph_ratio** (N units with multiplier M → M == 10^N; "twice/double" per unit → violation); **substance_ph** (reference substance with a number → within tolerance); **ph_range** (scale bounds must be 0 and 14); **valence_claims** (element with a stated count of outer/valence electrons → matches `ELEMENTS`); **shared_pairs_claims** (molecule with stated pair count → matches `MOLECULES`). A clause with several numbers and several class words is **not guessed**: it is recorded as an unverified claim. Numbers matched by no checker are recorded in `unverified_numeric_claims` and forwarded to the critic. |
+| **G2c Claims in narration and on-screen text** | Applied to narration and to every LLM-provided on-screen string (`subtitle`, `points`, table cells). Checkers split text into clauses (on `.;` and `while`, `whereas`, `but`) and verify: **ph_classification** (a pH number with acidic/neutral/basic word → class derived from the number); **ph_ratio** (N units with multiplier M → M == 10^N; "twice/double" per unit → violation); **substance_ph** (reference substance with a number → within tolerance); **ph_range** (scale bounds must be 0 and 14); **valence_claims** (element with a stated count of outer/valence electrons → matches `ELEMENTS`); **shared_pairs_claims** (molecule with stated pair count → matches `MOLECULES`). A clause with several numbers and several class words is **not guessed**: it is recorded as an unverified claim. Numbers matched by no checker are recorded in `unverified_numeric_claims` and forwarded to the critic. |
 | **G2d Layout pre-flight** | For every LLM-provided string, look up its slot in `render/layout.py` (the same slot definitions the Manim templates use). Measure with Pillow `ImageFont.truetype(assets/fonts/Inter…, size)`, with greedy word wrapping and a 5 % safety margin. Check width ≤ slot width, height ≤ slot height, lines ≤ slot max lines, slot inside the 90 % title-safe area. Slots are non-overlapping by construction; render layout tests assert this. |
 | **G3 Critic** | §5.4. Critic error or timeout → `critic_skipped=true`, gate passes on G1+G2. |
 
@@ -397,8 +454,9 @@ return (curated_storyboard(topic), generation_source="curated_fallback", fallbac
 
 - `LLM_VALIDATION_FAILED` (with the last violation codes)
 - `LLM_PROVIDER_ERROR` (non-retryable 4xx, or retries exhausted)
-- `BUDGET_EXCEEDED_JOB`
-- `BUDGET_EXCEEDED_DAILY`
+- `BUDGET_EXCEEDED_JOB` (per-job guardrail would be crossed)
+- `PROJECT_CAP_REACHED` (hard project cap would be crossed)
+- `BUDGET_EXCEEDED_DAILY` (only when the optional daily budget is enabled, §9.3)
 
 The curated storyboard is validated by G1+G2 at start-up and in tests. If it fails at runtime, the job
 fails with `CURATED_FALLBACK_INVALID` (non-retryable).
@@ -461,7 +519,8 @@ class ASRProvider(Protocol):
 - Concurrency limit is 2.
 - **TTS cache key:** `sha256(provider, model, voice, style_version, spoken_text)`, stored under `data/cache/tts/`. Cached clips are re-validated (A1–A4) before reuse.
 - **One voice per video.** A scene that exhausts retries on the current provider triggers a **video-level switch**: all scenes are re-voiced on the fallback provider, cache hits included. The switch emits a `voice_provider_switched` event; the cost of abandoned calls stays in the ledger.
-- **Budget pre-check before voicing:** projected cost = Σ expected seconds × 25 tokens/s × price. If it exceeds the remaining per-job or daily budget, the whole video uses the fallback provider from the start (`voice_fallback_reason=BUDGET_EXCEEDED_*`).
+- **Budget pre-check before voicing.** Projected cost = Σ upper-bound seconds per scene (expected seconds × 1.6) × 25 tokens/s × price. If that would cross the per-job budget, the project hard cap, or the optional daily budget, the whole video uses the fallback provider from the start (`voice_fallback_reason` = `BUDGET_EXCEEDED_JOB` | `PROJECT_CAP_REACHED` | `BUDGET_EXCEEDED_DAILY`).
+- The pre-check only chooses the provider. Every individual clip call still reserves and settles through the spend guard (§9.3). A refusal in the middle of voicing triggers the same video-level switch to the free provider.
 
 ### 7.3 Clip validation
 
@@ -582,7 +641,12 @@ class ArtifactStore(Protocol):
 
 - Each file is copied to `<name>.tmp-<attempt>` and then `os.replace`d. `manifest.json` is written last, the same way.
 - A valid manifest (present, every hash matches) means publication is complete. After publishing, the worker performs the fenced update to `succeeded`.
-- **Recovery.** If a claimed job has a manifest that `verify()` accepts and whose `pipeline_version` and `job_id` match, it goes straight to `succeeded` (event `publish_recovered`).
+- **Recovery.** A claimed job goes straight to `succeeded` (fenced update, event `publish_recovered`) only if its manifest passes **all** of:
+  - `verify()` accepts it;
+  - its `job_id` and `pipeline_version` match;
+  - its recorded `checkpoint_attempts` (stage key → attempt) equal the current `stage_checkpoints` rows.
+
+  The DB therefore remains the authority for which content is published. A manifest built from superseded checkpoints is ignored and publication re-runs.
 
 **Published files:**
 
@@ -594,7 +658,7 @@ class ArtifactStore(Protocol):
 | `storyboard.json` | the approved storyboard |
 | `quality_report.json` | all G/A/Q gate results, attempts, critic scores, WER |
 | `contact_sheet.jpg` | one frame per scene |
-| `manifest.json` | file list with sha256 and bytes; `pipeline_version`, `schema_version`, prompt versions, models, voice/provider, `renderer_version`, `topic_pack_version`, `generation_source`, `fallback_reason`, cost summary, per-stage durations |
+| `manifest.json` | file list with sha256 and bytes; `pipeline_version`, `schema_version`, prompt versions, models, voice/provider, `renderer_version`, `topic_pack_version`, `generation_source`, `fallback_reason`, `checkpoint_attempts`, cost summary (billable vs estimated production cost separated), per-stage durations |
 
 Production mapping: GCS bucket with object generation preconditions; `url_for` returns signed URLs and `/content` responds with 302.
 
@@ -612,50 +676,107 @@ All errors use the envelope `{"error": {"code", "message", "retryable", "details
 | `GET /v1/videos/{id}/artifacts/{name}` | file; `name` from the published allow-list only | `404`, `409` |
 | `POST /v1/videos/{id}/retry` | `202 VideoJob` | `404`, `409 NOT_RETRYABLE` |
 | `GET /v1/topics` | `200 [{topic_id, title, canonical_query}]` | — |
-| `GET /healthz` | `200 {db, ffmpeg, worker_heartbeat_age_s}` | `503` if DB or ffmpeg unavailable |
+| `GET /healthz` | `200 {db, ffmpeg, worker_heartbeat_age_s, project_spend: {billable_usd, reserved_usd, warning_usd, hard_cap_usd, state: ok\|warning\|hard_cap_reached}}` | `503` if DB or ffmpeg unavailable |
 
 **`VideoJob` fields:** `id`, `query`, `topic_id`, `status`, `stage`, `progress` (0–1, stage-based), `attempt`, `generation_source`, `fallback_reason`, `error`, `created_at`, `updated_at`, `started_at`, `finished_at`, `links {self, content, artifacts}`.
 
-**`VideoJobDetail` adds:** `events[]`, `quality` summary (gate outcomes, attempts, critic scores, `critic_skipped`, `asr_skipped`, `voice_provider`), `cost {total_usd, actual_usd, estimated_usd, free_calls, by_operation, pricing_version}`, `artifacts[]`, `stage_durations_s`.
+**`VideoJobDetail` adds:** `events[]`, `quality` summary (gate outcomes, attempts, critic scores, `critic_skipped`, `asr_skipped`, `voice_provider`), `cost {billable_usd, billable_actual_usd, billable_estimated_usd, failed_call_usd, free_calls, estimated_production_compute_usd, by_operation, pricing_version}`, `artifacts[]`, `stage_durations_s`.
 
 **Process model.** The worker runs embedded in the API process by default (`RUN_EMBEDDED_WORKER=true`, one worker thread, pipeline is synchronous). It can also run as `python -m app.worker`. Any number of worker processes may share the DB.
 
 ### 9.3 Cost ledger, pricing, budgets
 
-- **Every paid or free provider call writes a `cost_entries` row, including failed calls and retries.**
-  - `cost_source=actual`: computed from `usage_metadata` × price.
-  - `cost_source=estimated`: usage unavailable. Text tokens ≈ characters ÷ 4; TTS audio tokens = seconds × 25; audio input tokens = seconds × 32.
-  - `cost_source=free`: edge-tts.
-  - `render_compute` is always estimated: measured CPU seconds × configured vCPU × Cloud Run price (a production estimate).
-- **`cost/pricing.py`:** `PRICING_VERSION = "2026-09-13"`. Each price records `input_per_m`, `output_per_m` (or `per_second`), `source_url` and `verified_on`. Current values from the Gemini pricing page:
+#### Budget settings
+
+| Setting | Value | Meaning |
+|---|---|---|
+| `WARNING_BUDGET_USD` | 3.00 | When cumulative billable project spend reaches it, a warning is reported **once**. Spending continues. |
+| `HARD_PROJECT_CAP_USD` | 5.00 | No paid call may start if `billable settled + outstanding reservations + this call's projection` would exceed it. Covers every paid call from any process using the project ledger. |
+| `COST_JOB_BUDGET_USD` | 0.20 | Normal per-job guardrail over the job's billable settled + reserved spend. |
+| `COST_DAILY_BUDGET_USD` | unset (disabled) | Optional service-level guard retained from the Part 2 design for production use. When set, it applies the same check over the current UTC day. |
+
+**Billable** means real provider calls (`billable=1`), including calls whose cost is estimated because usage metadata was missing. The render-compute production estimate (`billable=0`) is reported per video but never counts toward any budget, because no money is spent locally.
+
+#### Spend guard: reserve → call → settle
+
+Every paid Gemini call (writer, critic, TTS, ASR, calibration and live-test calls) goes through `cost/budget.py` `SpendGuard`. There is no code path that calls a paid provider without it; a unit test enumerates provider adapters to prove it.
+
+1. **Project before the call.** Compute an **upper-bound** projection. Every paid call sets `max_output_tokens`, so the output side is bounded:
+   - Text calls: `input_tokens_est × input_price + (max_output_tokens + thinking_budget) × output_price`. Thinking tokens are added separately so the bound holds whether or not the provider counts them inside `max_output_tokens`.
+   - TTS: `max_output_tokens` is set to (expected seconds × 1.6 × 25), then priced at the audio output rate.
+   - ASR: audio seconds × 32 × input price + max output tokens × output price.
+2. **Reserve atomically.** In one `BEGIN IMMEDIATE` transaction on the ledger DB:
+   ```sql
+   SELECT COALESCE(SUM(CASE WHEN status='reserved' THEN projected_usd ELSE usd END), 0)
+   FROM cost_entries WHERE billable=1;                       -- project total (+ same with job_id=? for the job)
+   ```
+   - If `project_total + projection > HARD_PROJECT_CAP_USD` → rollback and raise `BudgetRefused(scope="project")`.
+   - If `job_total + projection > COST_JOB_BUDGET_USD` → rollback and raise `BudgetRefused(scope="job")`.
+   - If the daily guard is enabled, the same check runs over today.
+   - Otherwise insert a `status='reserved'` row with `projected_usd` and commit.
+
+   SQLite serialises `BEGIN IMMEDIATE` writers across processes, so two concurrent calls cannot both pass on the same remaining headroom.
+3. **Call the provider.**
+4. **Settle immediately.** Settlement runs in `finally`, so it happens on success, error and timeout alike:
+   `UPDATE cost_entries SET status=:ok|error, usd=:usd, cost_source=:src, units_json=:units, error_code=:err, settled_at=:now WHERE id=:rid AND status='reserved'`.
+   - **Success:** `actual` from `usage_metadata` × price. If metadata is missing, `estimated` (text tokens ≈ characters ÷ 4; TTS audio tokens = seconds × 25; audio input tokens = seconds × 32).
+   - **Rejected before processing** (HTTP 400/401/403/429): `usd=0`, `cost_source=estimated`.
+   - **Timeouts and 5xx:** estimated input-token cost, since the request may have been processed.
+
+   This failed-call billing assumption is **marked for verification against Google's billing documentation before publication**.
+   - If a settled amount exceeds its projection, a `projection_underestimate` warning is logged and the real value is kept.
+   - Each provider retry is a separate reserve/settle pair, so retries always appear in the ledger.
+5. **Crashed reservations.** A process dying between reserve and settle leaves a `reserved` row. It keeps counting at `projected_usd` forever (conservative) and is never deleted. The eval report lists unsettled reservations.
+6. **Warning once.** After each settlement, if the billable project total is ≥ `WARNING_BUDGET_USD`:
+   - `INSERT OR IGNORE INTO budget_state('project_warning_emitted', …)`. Only the inserting process (rowcount 1) emits the warning: a WARNING log line, a `project_budget_warning` event on the current job if any, and a line printed by evaluation/calibration scripts.
+   - `/healthz` and eval reports show `state=warning` from then on.
+
+**The hard cap is never enforced by an end-of-run check.** Refusal happens at step 2, before money can be spent.
+
+#### Behaviour on refusal
+
+| Where | Behaviour |
+|---|---|
+| Writer / critic | Stop LLM calls; curated fallback with `fallback_reason=BUDGET_EXCEEDED_JOB` or `PROJECT_CAP_REACHED` (or `BUDGET_EXCEEDED_DAILY` when enabled). |
+| TTS | Video-level switch to the free provider (§7.2). |
+| ASR | `asr_skipped=true`, reason `budget`. |
+| Jobs in general | Degradation emits `budget_degraded` and never fails the job by itself. |
+| `reliability_eval.py --mode live`, `calibrate_gates.py` | Pre-flight: refuse to start if projected run cost (runs × p95 upper-bound estimate) would cross the hard cap or `--max-usd`. At runtime: a `BudgetRefused` aborts the run (degraded runs would measure the fallback, not the pipeline) and the report records the abort. |
+| Live pytest | Skip with the refusal reason. |
+
+#### Ledger rows and pricing
+
+- Every provider call writes a `cost_entries` row, including failed calls and retries; `cost_source=free` is used for edge-tts.
+- `render_compute` rows are `billable=0`, `cost_source=estimated`: measured CPU seconds × configured vCPU × Cloud Run price, a production estimate only.
+- **`cost/pricing.py`:** `PRICING_VERSION = "2026-09-13"`. Each price records `input_per_m`, `output_per_m` (or `per_second`), `source_url` and `verified_on`.
+
+  Values as read from the Gemini pricing page on 2026-09-13, **to be re-verified on the official page before publication in `docs/COST.md`**:
 
   | Model | Input / 1M | Output / 1M |
   |---|---|---|
   | 2.5 Flash | $0.30 | $2.50 |
-  | 2.5 Flash-Lite | $0.10 text, $0.30 audio | $0.40 |
+  | 2.5 Flash-Lite | $0.10 text | $0.40 |
   | 2.5 Flash TTS | $0.50 text | $10.00 audio |
 
-  Cloud Run instance-based prices ($0.000018 per vCPU-s, $0.000002 per GiB-s) come from a secondary source and **must be re-verified on the official page before publication in `docs/COST.md`**.
-- **Budgets:** `COST_JOB_BUDGET_USD=0.10`, `COST_DAILY_BUDGET_USD=1.00` (UTC day, sum over `cost_entries`). Before each paid call, `spent + projected(call) > budget` triggers the degrade path:
-  - writer/critic → curated fallback;
-  - TTS → fallback provider for the whole video (§7.2);
-  - ASR → `asr_skipped` with reason `budget`.
+  - The 2.5 Flash-Lite **audio input** price was not captured and **must be looked up before the ASR cost is published**. Until then:
+    - its `pricing.py` entry has `verified_on=None`;
+    - projections use a deliberately high placeholder of $1.00 per 1M audio tokens, labelled as a placeholder, not a price;
+    - ASR ledger rows settle with `cost_source=estimated`.
+  - Cloud Run instance-based prices ($0.000018 per vCPU-s, $0.000002 per GiB-s) come from a secondary source and **must be re-verified on the official page before publication**.
 
-  Degradation emits `budget_degraded` and never fails the job by itself.
+**Expected per-video cost** (75 s video, estimates only, to be replaced by measured ledger values):
 
-**Expected per-video cost** (75 s video, to be replaced by measured ledger values):
+| Item | Kind | Estimate |
+|---|---|---|
+| writer attempt | billable | ≈ $0.007 |
+| critic | billable | ≈ $0.0005 |
+| TTS | billable | ≈ $0.019 |
+| ASR | billable | unknown until the Flash-Lite audio price is verified (≈ $0.0008 if it is $0.30 per 1M; the guard projects with the $1.00 placeholder) |
+| render + assembly compute on Cloud Run | estimated production cost, not billable | ≈ $0.005 |
+| **typical billable** (1 writer attempt) | | **≈ $0.027** + ASR |
+| **worst-case billable** (3 writer attempts + TTS retries) | | ≈ $0.05 + ASR, well under the $0.20 per-job guardrail |
 
-| Item | Estimate |
-|---|---|
-| writer attempt | ≈ $0.007 |
-| critic | ≈ $0.0005 |
-| TTS | ≈ $0.019 |
-| ASR | ≈ $0.0008 |
-| compute | ≈ $0.005 |
-| **typical** | **≈ $0.03** |
-| worst case (3 writer attempts + TTS retries) | ≈ $0.055 |
-
-TTS is the dominant cost (~60 %).
+On these estimates TTS is the dominant cost, about 60 % of the typical total. This must be confirmed with measured ledger data.
 
 **Documented, not implemented:** reuse of canonical-query videos across learners (a product decision that trades against personalization); Batch API for TTS (−50 %, latency-tolerant); Spot render workers.
 
@@ -666,7 +787,7 @@ TTS is the dominant cost (~60 %).
   - Job and lease: `job_created`, `job_claimed`, `lease_reclaimed`, `lease_lost`, `retry_scheduled`, `retry_requested`, `job_succeeded`, `job_failed`.
   - Stages and checkpoints: `stage_started`, `stage_completed`, `stage_skipped_checkpoint`.
   - Content: `writer_attempt`, `gate_result`, `critic_skipped`, `fallback_used`.
-  - Providers and budget: `provider_retry`, `budget_degraded`.
+  - Providers and budget: `provider_retry`, `budget_degraded`, `project_budget_warning`.
   - Voicing: `tts_clip_retry`, `voice_provider_switched`, `asr_skipped`.
   - Rendering and QA: `render_scene_failed`, `render_scene_retried`, `qa_result`.
   - Publication: `artifact_published`, `publish_recovered`.
@@ -689,7 +810,12 @@ TTS is the dominant cost (~60 %).
   - A stale worker's write → `StaleLeaseError` and 0 rows changed.
   - `lease_claims ≥ max` → the sweep produces `WORKER_LOST`.
 - **Stateful property test (Hypothesis):** random sequences of claim, heartbeat, crash, clock advance, stage failure and retry. Invariants: never two unexpired leases on one job; once the clock passes every lease and a live worker keeps polling, no job stays in `running` and every job eventually becomes terminal.
-- **Retry:** two concurrent retries → exactly one wins. Scheduled retry honours `not_before` and the count limit.
+- **Retry:**
+  - Two concurrent manual retries → exactly one wins.
+  - Scheduled retry honours `not_before`, resets `lease_claims`, keeps `attempt` monotonic, stops after 2 and then fails.
+  - Manual retry resets `lease_claims`, `scheduled_retries` and `not_before`.
+  - The lease-expiry sweep produces `WORKER_LOST` and never schedules a retry.
+  - A job with pending `not_before` is not claimable early.
 - **Idempotency:** replay returns the same job; a different body → 409; concurrent same-key inserts → one job.
 - **API contract:** `TestClient` with fakes checks status codes, `Location`, the error envelope, pagination cursors, the artifact name allow-list and `/healthz`.
 - **Observability:** JSON log records carry `job_id` and `attempt`; the event timeline is ordered.
@@ -717,7 +843,8 @@ TTS is the dominant cost (~60 %).
   - 429 twice → backoff (fake sleeper) → success;
   - critic error → `critic_skipped`;
   - critic < 4 → rewrite;
-  - budget exceeded mid-loop → no further LLM calls, `BUDGET_EXCEEDED_JOB`.
+  - per-job budget refusal mid-loop → no further LLM calls, `BUDGET_EXCEEDED_JOB`;
+  - project cap refusal → `PROJECT_CAP_REACHED`.
 
 *Media (Part 3)*
 - **Audio checks** on numpy-synthesised WAVs: A1–A4 pass and fail cases, trimming; A5 normalization and WER edge cases; `asr_skipped`; report-only mode.
@@ -726,9 +853,26 @@ TTS is the dominant cost (~60 %).
 - **Timeline:** frame totals exact across scenes; beats within bounds and monotonic.
 - **Captions:** line limits, VTT validity, monotonic timing, ASS escaping.
 - **Checkpoint validity:** one test per invalidation condition (missing row, missing file, `stage.json` hash, file hash, input hash, version mismatch). Promotion with a stale fence is rejected.
-- **Publication:** crash after files but before the DB update → recovery to `succeeded`; tampered file hash → not treated as published.
+- **Publication:**
+  - Crash after files but before the DB update → recovery to `succeeded`.
+  - Tampered file hash → not treated as published.
+  - A manifest whose `checkpoint_attempts` differ from the current `stage_checkpoints` rows → ignored, and publication re-runs.
 - **Error classification table:** every `(code, cause)` → `retryable`.
-- **Cost:** actual vs estimated vs free; pricing version stored; job and daily budget arithmetic.
+- **Cost ledger and spend guard:**
+  - Reservation is written **before** the provider is invoked (a fake provider asserts a `reserved` row exists when it is called).
+  - Settlement is written immediately after success, error and timeout (actual, estimated, free).
+  - Failed calls and each retry produce their own rows.
+  - Upper-bound projection uses `max_output_tokens`.
+  - Per-job refusal at $0.20.
+  - Hard-cap refusal at $5.00, counting outstanding reservations.
+  - 8 threads racing for the last headroom → total never exceeds the cap.
+  - Warning emitted exactly once at $3.00 across two processes.
+  - Unsettled reservations still count.
+  - `render_compute` rows are `billable=0` and excluded from every budget.
+  - Optional daily guard is disabled by default and enforced when set.
+  - Every paid provider adapter is constructed with a `SpendGuard`; a test enumerates adapters.
+  - Paid-call commands refuse a non-project ledger path.
+  - Pricing version is stored on every row.
 - **Input sanitization:** Pango markup in the query rendered literally; ASS braces escaped.
 
 **Integration** (`-m integration`, real ffmpeg, SQLite file, worker loop; fake LLM/TTS/ASR and `FakeRenderer`)
@@ -766,11 +910,12 @@ TTS is the dominant cost (~60 %).
   2. 0 jobs stuck in `running`.
   3. 0 published artifacts failing `verify()` or media QA.
   4. Fallback is used exactly when the writer loop exhausts.
-  5. Ledger rows exist for failed calls.
+  5. Ledger rows exist for failed calls and retries, and the spend guard's simulated project cap (a small cap configured for the run) is never exceeded.
 
 **`--mode live`**
 - The three canonical queries × `--runs` (default 5) go through the HTTP API.
-- A pre-flight projection times the p95 per-video estimate. The run refuses to start above `--max-usd` (default $1.00) or when cumulative ledger spend would exceed the $3.00 development cap.
+- **Pre-flight.** Projected run cost = runs × upper-bound per-video estimate. The run refuses to start above `--max-usd` (default $1.00) or when it could push the project ledger past `HARD_PROJECT_CAP_USD` ($5.00). It prints the warning state if the project is already past $3.00.
+- **During the run**, enforcement stays per call (§9.3); any `BudgetRefused` aborts the run and is recorded.
 - **Report** (`evals/results/<timestamp>/report.md` + `runs.jsonl` + one contact-sheet grid per topic):
   - success rate; `llm` vs `curated_fallback`; writer attempt distribution; G2 violation histogram;
   - critic score mean/min and `critic_skipped`;
@@ -850,12 +995,36 @@ a `needs_review` publication policy); vertical 9:16 layouts; non-English narrati
 the three packs; GCS/Firestore/Cloud Tasks adapters (mapping documented only); Prometheus;
 job cancellation; idempotency-key expiry.
 
-## 14. Refinements introduced while writing this spec (need confirmation)
+## 14. Refinements introduced while writing this spec (confirmed 2026-09-13)
+
+All seven were approved without modification.
 
 1. **Scheduled automatic retry** for retryable stage failures (`running → queued` with `not_before`, at most 2, delays 60 s / 300 s) before a job becomes `failed`.
-2. **`lease_claims`** counter separate from the monotonic `attempt` fencing token, so a manual retry resets the automatic-reclaim budget without reusing fencing tokens.
-3. **`stage_checkpoints` table** as the DB authority for which immutable per-attempt checkpoint directory is current. This implements decision "only the lease holder may publish a checkpoint" without directory-rename races on Windows.
+2. **`lease_claims`** counter separate from the monotonic `attempt` fencing token. Entering `queued` resets the automatic-reclaim budget without reusing fencing tokens.
+3. **`stage_checkpoints` table** as the DB authority for which immutable per-attempt checkpoint directory is current. This implements "only the lease holder may publish a checkpoint" without directory-rename races on Windows.
 4. **`electron_sharing` / `electron_transfer` take a molecule or compound enum** instead of LLM-supplied atoms and pair counts. This is a stricter application of "code populates controlled numeric values".
-5. **Input sanitization:** `Text` not `MarkupText` for user and LLM strings; ASS brace escaping.
-6. **Render compute cost** is included in the per-video ledger as an estimated entry.
+5. **Input sanitization:** `Text`, not `MarkupText`, for user and LLM strings; ASS brace escaping.
+6. **Render compute cost** is included in the per-video ledger as `cost_source=estimated`, `billable=0`.
 7. **A5 runs report-only until a calibration report exists**, so no threshold is invented.
+
+## 15. Change log
+
+**2026-09-13, revision 2** (after approval of §14)
+
+- **Budget decisions replaced** (§1, §9.3): `WARNING_BUDGET_USD=3.00` (report once), `HARD_PROJECT_CAP_USD=5.00` (per-call reservation enforcement across all paid activity), `COST_JOB_BUDGET_USD=0.20`. The previous `COST_JOB_BUDGET_USD=0.10` and `COST_DAILY_BUDGET_USD=1.00` defaults are removed.
+- The **service-level daily budget from Part 2 is retained as an optional guard, disabled by default**, and flagged for review since the new decisions did not mention it.
+- **Spend guard mechanics** (§4.2 ledger schema, §9.3):
+  - upper-bound projection via `max_output_tokens`;
+  - atomic `BEGIN IMMEDIATE` reservation;
+  - settlement in `finally`;
+  - failed calls and retries recorded;
+  - crashed reservations counted conservatively;
+  - once-only warning via `budget_state`;
+  - single persistent project ledger that paid-call commands must use.
+- **Consistency fixes:**
+  - explicit counter semantics and SQL for scheduled and manual retry, with worker loss vs scheduled retry separated (§4.6);
+  - publication recovery also requires the manifest's `checkpoint_attempts` to match DB checkpoint rows (§9.1);
+  - G2c claim checks extended to LLM-provided on-screen text (§5.5);
+  - `render_compute` excluded from budgets (§9.3);
+  - per-video cost table separates billable and estimated production cost (§9.3).
+- **Verification markers added:** single-sample TTS token rate, Veo prices, all Gemini text/TTS prices, Flash-Lite audio input price (unknown), failed-call billing assumption.
