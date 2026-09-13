@@ -1,0 +1,47 @@
+[project]
+name = "chem-video-service"
+version = "0.1.0"
+description = "AI chemistry video request service"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic>=2.13",
+    "pydantic-settings",
+    "google-genai>=2.23",
+    "edge-tts==7.2.8",
+    "manim==0.21.0",
+    "pillow",
+    "numpy",
+    "psutil",
+    "pyyaml",
+    "httpx",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "hypothesis",
+    "ruff",
+    "mypy",
+    "types-PyYAML",
+    "types-psutil",
+]
+
+[tool.pytest.ini_options]
+markers = ["integration", "render", "live"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+# Spec and plan code blocks are compact interface sketches, not formatted Python.
+extend-exclude = ["docs/superpowers"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.12"
+check_untyped_defs = true
+ignore_missing_imports = true
