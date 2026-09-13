@@ -1,0 +1,70 @@
+id: ionic_vs_covalent
+subject: chemistry
+title: Ionic vs covalent bonding
+version: "1.0.0"
+canonical_query: What is the difference between ionic and covalent bonding?
+
+match:
+  all_of:
+    - ["ionic"]
+    - ["covalent"]
+
+required_facts:
+  - id: ionic_transfer_metal_to_non_metal
+    statement: In ionic bonding, electrons are transferred from a metal atom to a non-metal atom.
+    detect:
+      - ["transfer", "transfers", "transferred", "transferring"]
+      - ["metal", "metals"]
+  - id: opposite_charges_attract
+    statement: The resulting ions have opposite charges and attract each other.
+    detect:
+      - ["opposite", "oppositely"]
+      - ["charge", "charges", "charged"]
+      - ["attract", "attracts", "attracted", "attraction"]
+  - id: covalent_share_non_metals
+    statement: In covalent bonding, electrons are shared between non-metal atoms.
+    detect:
+      - ["share", "shares", "shared", "sharing"]
+      - ["non metal", "non metals", "nonmetal", "nonmetals"]
+  - id: example_of_each
+    statement: One example of each, such as sodium chloride (ionic) and hydrogen chloride or chlorine (covalent).
+    detect:
+      - ["sodium chloride", "sodium fluoride", "magnesium oxide", "nacl", "naf", "mgo"]
+      - ["hydrogen", "chlorine", "oxygen", "nitrogen", "fluorine", "hydrogen chloride",
+         "h2", "cl2", "o2", "n2", "f2", "hcl"]
+  - id: both_stable_shells
+    statement: Both kinds of bonding let atoms reach stable, full outer shells.
+    detect:
+      - ["full", "stable", "complete"]
+      - ["outer shell", "outer shells", "outermost shell", "outer electron shell", "octet"]
+
+misconceptions:
+  - id: ionic_shares
+    pattern: '\bionic bonds? (involve|involves|form by|are formed by|happen by) (the )?shar'
+    explanation: Ionic bonds transfer electrons; covalent bonds share them.
+  - id: covalent_transfers
+    pattern: '\bcovalent bonds? (involve|involves|form by|are formed by|happen by) (the )?transfer'
+    explanation: Covalent bonds share electrons; ionic bonds transfer them.
+  - id: ionic_between_non_metals
+    pattern: '\bionic bonds? (form|forms|are formed|happen) between two non ?metals'
+    explanation: Ionic bonds form between a metal and a non-metal.
+
+claim_checks: [valence_claims, shared_pairs_claims, ion_charge_claims]
+
+allowed_visuals:
+  [title_card, key_points, atom_shells, electron_sharing, electron_transfer, comparison_table]
+required_visuals: [electron_transfer, electron_sharing, comparison_table]
+allowed_elements: [H, C, N, O, F, Na, Mg, Cl]
+allowed_molecules: [H2, Cl2, F2, O2, N2, HCl]
+allowed_compounds: [NaCl, NaF, MgO]
+
+pronunciations:
+  NaCl: sodium chloride
+  NaF: sodium fluoride
+  MgO: magnesium oxide
+  HCl: hydrogen chloride
+  H2: H two
+  Cl2: C L two
+  F2: F two
+  O2: O two
+  N2: N two

@@ -1,0 +1,41 @@
+{
+  "schema_version": "1",
+  "topic_id": "covalent_bonds",
+  "title": "Why atoms form covalent bonds",
+  "learning_objective": "Explain that atoms form covalent bonds by sharing pairs of electrons to reach full outer shells, held together by attraction to both nuclei.",
+  "scenes": [
+    {
+      "on_screen_title": "Why do atoms form covalent bonds?",
+      "narration": "Atoms join together to make almost everything around us, from the water you drink to the air you breathe. Many of these atoms are held together by covalent bonds. So why do atoms form them?",
+      "visual": {"type": "title_card", "subtitle": "Sharing electrons to become stable"}
+    },
+    {
+      "on_screen_title": "Outer shells",
+      "narration": "An atom is most stable when its outer shell is full. Chlorine has seven outer electrons, so it needs one more to reach eight. Hydrogen has one electron and needs one more to fill its shell.",
+      "visual": {"type": "atom_shells", "elements": ["H", "Cl"]}
+    },
+    {
+      "on_screen_title": "Sharing a pair",
+      "narration": "Instead of giving electrons away, hydrogen and chlorine share a pair of electrons. The shared pair counts for both atoms, so each atom now has a full, stable outer shell. Together they make hydrogen chloride.",
+      "visual": {"type": "electron_sharing", "molecule": "HCl"}
+    },
+    {
+      "on_screen_title": "Double bonds",
+      "narration": "Some atoms share more than one pair. Oxygen atoms each have six outer electrons, so two oxygen atoms share two pairs of electrons. This double bond gives both atoms a full outer shell of eight.",
+      "visual": {"type": "electron_sharing", "molecule": "O2"}
+    },
+    {
+      "on_screen_title": "What holds them together",
+      "narration": "Covalent bonds usually form between non-metal atoms. The shared electrons are attracted to both nuclei at the same time, and this pull holds the atoms together. Nitrogen atoms even share three pairs.",
+      "visual": {"type": "electron_sharing", "molecule": "N2"}
+    },
+    {
+      "on_screen_title": "Key points",
+      "narration": "To sum up, atoms form covalent bonds because sharing pairs of electrons gives each atom a full outer shell. The shared electrons are attracted to both nuclei, which keeps non-metal atoms firmly joined together.",
+      "visual": {
+        "type": "key_points",
+        "points": ["Atoms share pairs of electrons", "Sharing fills each atom's outer shell", "Shared electrons attract both nuclei", "Covalent bonds join non-metal atoms"]
+      }
+    }
+  ]
+}

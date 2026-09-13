@@ -1,0 +1,60 @@
+id: covalent_bonds
+subject: chemistry
+title: Covalent bonds
+version: "1.0.0"
+canonical_query: Why do atoms form covalent bonds?
+
+match:
+  all_of:
+    - ["covalent"]
+  none_of: ["ionic"]
+
+required_facts:
+  - id: share_electron_pairs
+    statement: In a covalent bond, atoms share pairs of electrons.
+    detect:
+      - ["share", "shares", "shared", "sharing"]
+      - ["pair", "pairs"]
+      - ["electron", "electrons"]
+  - id: full_outer_shell
+    statement: Sharing lets each atom reach a full, stable outer shell (an octet, or two electrons for hydrogen).
+    detect:
+      - ["full", "stable", "complete"]
+      - ["outer shell", "outer shells", "outermost shell", "outer electron shell", "octet"]
+  - id: between_non_metals
+    statement: Covalent bonds typically form between non-metal atoms.
+    detect:
+      - ["non metal", "non metals", "nonmetal", "nonmetals"]
+  - id: nuclei_attract_shared_pair
+    statement: The shared pair is attracted to both nuclei, which holds the atoms together.
+    detect:
+      - ["nucleus", "nuclei"]
+      - ["attract", "attracts", "attracted", "attraction", "pull", "pulls", "pulled"]
+  - id: named_example
+    statement: A named example such as hydrogen (H2), chlorine (Cl2), oxygen (O2), nitrogen (N2) or hydrogen chloride (HCl).
+    detect:
+      - ["hydrogen", "chlorine", "oxygen", "nitrogen", "fluorine", "hydrogen chloride",
+         "h2", "cl2", "o2", "n2", "f2", "hcl"]
+
+misconceptions:
+  - id: covalent_transfer
+    pattern: '\bcovalent bonds? (involve|involves|form by|are formed by|happen by) (the )?transfer'
+    explanation: Covalent bonds share electrons; ionic bonds transfer them.
+  - id: lose_electrons_covalent
+    pattern: '\b(atoms|they) (lose|give away|give up) electrons to form (a )?covalent'
+    explanation: In covalent bonding no atom loses electrons; pairs are shared.
+
+claim_checks: [valence_claims, shared_pairs_claims]
+
+allowed_visuals: [title_card, key_points, atom_shells, electron_sharing, comparison_table]
+required_visuals: [electron_sharing]
+allowed_elements: [H, C, N, O, F, Cl]
+allowed_molecules: [H2, Cl2, F2, O2, N2, HCl]
+
+pronunciations:
+  H2: H two
+  Cl2: C L two
+  F2: F two
+  O2: O two
+  N2: N two
+  HCl: hydrogen chloride

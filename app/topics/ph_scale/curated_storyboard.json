@@ -1,0 +1,50 @@
+{
+  "schema_version": "1",
+  "topic_id": "ph_scale",
+  "title": "How the pH scale works",
+  "learning_objective": "Explain that pH runs from 0 to 14, classify solutions as acidic, neutral or basic, and describe each pH unit as a tenfold change.",
+  "scenes": [
+    {
+      "on_screen_title": "How does the pH scale work?",
+      "narration": "Have you ever wondered why lemon juice tastes sour while soap feels slippery? Chemists use the pH scale to describe how acidic or basic a solution is. Let's find out how it works.",
+      "visual": {"type": "title_card", "subtitle": "Acids, bases and the numbers in between"}
+    },
+    {
+      "on_screen_title": "From 0 to 14",
+      "narration": "The pH scale usually runs from 0 to 14. A pH below 7 is acidic, like lemon juice. A pH of exactly 7 is neutral, like pure water. A pH above 7 is basic, like bleach.",
+      "visual": {"type": "ph_scale", "markers": ["lemon_juice", "pure_water", "bleach"], "highlight": "none"}
+    },
+    {
+      "on_screen_title": "Everyday pH values",
+      "narration": "Everyday liquids sit at different points on the scale. Lemon juice has a pH of about 2. Black coffee is about 5. Seawater is about 8, and household ammonia is about 11.",
+      "visual": {"type": "ph_scale", "markers": ["lemon_juice", "black_coffee", "seawater", "household_ammonia"], "highlight": "none"}
+    },
+    {
+      "on_screen_title": "Ten times per step",
+      "narration": "The pH scale is logarithmic. Each step of one pH unit means ten times more hydrogen ions. So a solution with pH 3 has ten times more hydrogen ions than a solution with pH 4.",
+      "visual": {"type": "log_ratio", "from_ph": 4, "to_ph": 3}
+    },
+    {
+      "on_screen_title": "Acids vs bases",
+      "narration": "Acids and bases are opposites. Acids have a pH below 7 and more hydrogen ions than pure water. Bases have a pH above 7 and fewer hydrogen ions. Neutral solutions sit right in the middle.",
+      "visual": {
+        "type": "comparison_table",
+        "left_header": "Acids",
+        "right_header": "Bases",
+        "rows": [
+          {"aspect": "pH value", "left": "Below 7", "right": "Above 7"},
+          {"aspect": "Hydrogen ions", "left": "More than pure water", "right": "Fewer than pure water"},
+          {"aspect": "Example", "left": "Lemon juice", "right": "Bleach"}
+        ]
+      }
+    },
+    {
+      "on_screen_title": "Key points",
+      "narration": "Let's recap. The pH scale runs from 0 to 14. Below 7 is acidic; exactly 7 is neutral; above 7 is basic. Each step is a tenfold change in hydrogen ions.",
+      "visual": {
+        "type": "key_points",
+        "points": ["Below 7 means acidic", "Exactly 7 means neutral", "Above 7 means basic", "Each pH step is a tenfold change"]
+      }
+    }
+  ]
+}

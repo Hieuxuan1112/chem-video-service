@@ -1,0 +1,51 @@
+{
+  "schema_version": "1",
+  "topic_id": "ionic_vs_covalent",
+  "title": "Ionic vs covalent bonding",
+  "learning_objective": "Compare ionic bonding (electrons transferred from a metal to a non-metal) with covalent bonding (electrons shared between non-metals).",
+  "scenes": [
+    {
+      "on_screen_title": "Ionic vs covalent bonding",
+      "narration": "Atoms bond together to become more stable, but they do not all do it the same way. Some atoms transfer electrons and others share them. Let's compare ionic and covalent bonding.",
+      "visual": {"type": "title_card", "subtitle": "Two ways atoms reach full outer shells"}
+    },
+    {
+      "on_screen_title": "Ionic: electrons move",
+      "narration": "In ionic bonding, a metal atom transfers electrons to a non-metal atom. Sodium has one outer electron, and chlorine has seven. Sodium gives its electron to chlorine, so both end up with full outer shells.",
+      "visual": {"type": "electron_transfer", "compound": "NaCl"}
+    },
+    {
+      "on_screen_title": "Opposite charges attract",
+      "narration": "Magnesium gives two electrons to oxygen. Magnesium becomes a positive ion and oxygen becomes a negative ion. These oppositely charged ions attract each other strongly, forming magnesium oxide.",
+      "visual": {"type": "electron_transfer", "compound": "MgO"}
+    },
+    {
+      "on_screen_title": "Covalent: electrons shared",
+      "narration": "Covalent bonding is different. It happens between non-metal atoms, which share electrons instead of transferring them. Two chlorine atoms each have seven outer electrons, so they share one pair and both reach a full outer shell.",
+      "visual": {"type": "electron_sharing", "molecule": "Cl2"}
+    },
+    {
+      "on_screen_title": "Side by side",
+      "narration": "Here is the difference side by side. Ionic bonds form when electrons move from a metal to a non-metal, and the ions attract. Covalent bonds form when non-metals share pairs of electrons.",
+      "visual": {
+        "type": "comparison_table",
+        "left_header": "Ionic",
+        "right_header": "Covalent",
+        "rows": [
+          {"aspect": "Electrons", "left": "Transferred", "right": "Shared"},
+          {"aspect": "Atoms involved", "left": "Metal + non-metal", "right": "Non-metal + non-metal"},
+          {"aspect": "Held together by", "left": "Attraction between ions", "right": "Shared electron pairs"},
+          {"aspect": "Example", "left": "Sodium chloride", "right": "Chlorine"}
+        ]
+      }
+    },
+    {
+      "on_screen_title": "Key points",
+      "narration": "To recap, ionic bonds transfer electrons from metals to non-metals, making ions that attract. Covalent bonds share electrons between non-metals. Both kinds of bonding help atoms reach full, stable outer shells.",
+      "visual": {
+        "type": "key_points",
+        "points": ["Ionic bonds transfer electrons", "Covalent bonds share electrons", "Opposite ions attract in ionic bonds", "Both give atoms full outer shells"]
+      }
+    }
+  ]
+}

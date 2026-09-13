@@ -1,0 +1,64 @@
+id: ph_scale
+subject: chemistry
+title: The pH scale
+version: "1.0.0"
+canonical_query: How does the pH scale work?
+
+match:
+  all_of:
+    - ["ph", "p h", "acidity", "alkalinity", "acidic", "basic scale"]
+
+# Phrases are matched as whole words against the normalized full narration
+# (lowercase, punctuation removed), so "non-metal" is written "non metal".
+required_facts:
+  - id: range_0_14
+    statement: The pH scale usually runs from 0 to 14.
+    detect:
+      - ["0 to 14", "zero to fourteen", "0 and 14", "zero and fourteen"]
+  - id: below_7_acidic
+    statement: A solution with a pH below 7 is acidic.
+    detect:
+      - ["below 7", "less than 7", "under 7", "lower than 7",
+         "below seven", "less than seven", "under seven", "lower than seven"]
+      - ["acidic", "acid", "acids"]
+  - id: seven_neutral
+    statement: A pH of exactly 7 is neutral, like pure water.
+    detect:
+      - ["neutral"]
+      - ["7", "seven"]
+  - id: above_7_basic
+    statement: A solution with a pH above 7 is basic (alkaline).
+    detect:
+      - ["above 7", "more than 7", "greater than 7", "over 7", "higher than 7",
+         "above seven", "more than seven", "greater than seven", "over seven", "higher than seven"]
+      - ["basic", "alkaline", "base", "bases"]
+  - id: logarithmic_tenfold
+    statement: "The scale is logarithmic: each step of one pH unit is a tenfold change."
+    detect:
+      - ["10 times", "ten times", "tenfold", "10x", "factor of 10", "factor of ten"]
+  - id: hydrogen_ions
+    statement: pH measures the concentration of hydrogen ions (H+) in a solution.
+    detect:
+      - ["hydrogen ion", "hydrogen ions"]
+
+misconceptions:
+  - id: ph7_acidic
+    pattern: '\bph (of )?(7|seven) (is|means) (an )?acid'
+    explanation: A pH of 7 is neutral, not acidic.
+  - id: higher_ph_more_acidic
+    pattern: '\bhigher (the )?ph (means|is|gives|makes it) (a )?more acidic'
+    explanation: A higher pH means less acidic (more basic).
+  - id: linear_scale
+    pattern: '\b(ph )?scale is (a )?linear\b'
+    explanation: The pH scale is logarithmic, not linear.
+  - id: each_unit_twice
+    pattern: '\b(each|every|one) (ph )?(unit|step|number|point) (is|means) (twice|double|two times)'
+    explanation: Each pH unit is a tenfold change, not a doubling.
+
+claim_checks: [ph_classification, ph_ratio, substance_ph, ph_range]
+
+allowed_visuals: [title_card, key_points, ph_scale, log_ratio, comparison_table]
+required_visuals: [ph_scale]
+
+pronunciations:
+  pH: P H
