@@ -117,49 +117,37 @@ def _enum(values: object) -> dict[str, Any]:
     return {"type": "string", "enum": [str(v) for v in values]}  # type: ignore[attr-defined]
 
 
-def _string(max_length: int) -> dict[str, Any]:
-    return {"type": "string", "maxLength": max_length}
+def _string() -> dict[str, Any]:
+    return {"type": "string"}
 
 
 def provider_json_schema() -> dict[str, Any]:
-    """Flattened schema for providers that reject $ref/oneOf: the visual is one object with a
-    `type` enum and every visual field optional. G1 still validates the strict model."""
+    """Schema sent to the provider: types, enums, required fields and structure only.
+
+    The visual is flattened into one object with a `type` enum and every visual field optional,
+    because $ref/oneOf is not accepted. Length, item-count and numeric bounds are left out:
+    Gemini rejected both the strict schema and a bounded flattened one with "too many states
+    for serving" (spec §5.3). G1 validates the strict model, which keeps every bound."""
     visual = {
         "type": "object",
         "properties": {
             "type": {"type": "string", "enum": list(VISUAL_TYPES)},
-            "subtitle": _string(60),
-            "points": {"type": "array", "items": _string(60), "minItems": 2, "maxItems": 4},
-            "markers": {
-                "type": "array",
-                "items": _enum(SubstanceName),
-                "minItems": 2,
-                "maxItems": 5,
-            },
+            "subtitle": _string(),
+            "points": {"type": "array", "items": _string()},
+            "markers": {"type": "array", "items": _enum(SubstanceName)},
             "highlight": _enum(["acidic", "neutral", "basic", "none"]),
-            "from_ph": {"type": "integer", "minimum": 0, "maximum": 14},
-            "to_ph": {"type": "integer", "minimum": 0, "maximum": 14},
-            "elements": {
-                "type": "array",
-                "items": _enum(ElementSymbol),
-                "minItems": 1,
-                "maxItems": 2,
-            },
+            "from_ph": {"type": "integer"},
+            "to_ph": {"type": "integer"},
+            "elements": {"type": "array", "items": _enum(ElementSymbol)},
             "molecule": _enum(Molecule),
             "compound": _enum(IonicCompound),
-            "left_header": _string(16),
-            "right_header": _string(16),
+            "left_header": _string(),
+            "right_header": _string(),
             "rows": {
                 "type": "array",
-                "minItems": 2,
-                "maxItems": 4,
                 "items": {
                     "type": "object",
-                    "properties": {
-                        "aspect": _string(20),
-                        "left": _string(28),
-                        "right": _string(28),
-                    },
+                    "properties": {"aspect": _string(), "left": _string(), "right": _string()},
                     "required": ["aspect", "left", "right"],
                 },
             },
@@ -168,21 +156,17 @@ def provider_json_schema() -> dict[str, Any]:
     }
     scene = {
         "type": "object",
-        "properties": {
-            "on_screen_title": {"type": "string", "minLength": 1, "maxLength": 40},
-            "narration": {"type": "string", "minLength": 1, "maxLength": 600},
-            "visual": visual,
-        },
+        "properties": {"on_screen_title": _string(), "narration": _string(), "visual": visual},
         "required": ["on_screen_title", "narration", "visual"],
     }
     return {
         "type": "object",
         "properties": {
             "schema_version": {"type": "string", "enum": [SCHEMA_VERSION]},
-            "topic_id": {"type": "string"},
-            "title": _string(60),
-            "learning_objective": _string(160),
-            "scenes": {"type": "array", "items": scene, "minItems": 5, "maxItems": 7},
+            "topic_id": _string(),
+            "title": _string(),
+            "learning_objective": _string(),
+            "scenes": {"type": "array", "items": scene},
         },
         "required": ["schema_version", "topic_id", "title", "learning_objective", "scenes"],
     }

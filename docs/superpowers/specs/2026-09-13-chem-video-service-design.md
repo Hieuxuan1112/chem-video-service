@@ -1,7 +1,7 @@
 # AI Chemistry Video Request Service — Design Spec
 
 - **Date:** 2026-09-13
-- **Status:** Approved (Parts 1–4 and §14 refinements). Revision 2 applies the budget correction and a consistency pass (§15).
+- **Status:** Approved (Parts 1–4 and §14 refinements). Revision 2 applies the budget correction and a consistency pass (§15). Revision 3 records a provider schema compatibility change (§15).
 - **Scope source:** `Agentic_Backend_Challenge_AI_Chemistry_Video_Request_Service.pdf` (Growtrics coding challenge)
 - **Implementation state at time of writing:** nothing implemented. Only throw-away feasibility spikes were run (see §2).
 
@@ -191,6 +191,7 @@ CREATE TABLE cost_entries (
   cost_source TEXT,                                -- actual | estimated | free (set at settlement)
   units_json TEXT NOT NULL DEFAULT '{}',           -- input_tokens, output_tokens, audio_seconds, characters, cpu_seconds
   error_code TEXT,                                 -- provider error class for status=error
+  error_message TEXT,                              -- provider's own message, secrets redacted, ≤1000 chars (rev 3)
   pricing_version TEXT NOT NULL
 );
 CREATE INDEX cost_entries_ts ON cost_entries(ts);
@@ -402,10 +403,19 @@ The visual catalogue is closed. The LLM selects; code resolves every number.
 
 `scene.index` is assigned by code.
 
-The Gemini call uses `response_mime_type="application/json"` with the JSON schema generated from
-these models. If the API rejects the discriminated-union construct, the visual is flattened into one
-object (`type` plus optional fields) for the provider schema, and G1 still validates the strict model.
-This must be verified in the first live writer test.
+The Gemini call uses `response_mime_type="application/json"` with a **provider schema** derived from
+these models. The first live writer test (2026-09-14, `gemini-2.5-flash`, google-genai 2.23) showed:
+- the strict schema generated from these models (`$ref`/`oneOf` discriminated union plus bounds) was rejected;
+- a flattened schema (the visual as one object with a `type` enum and optional fields) that still carried
+  `maxLength`/`minLength`, `minItems`/`maxItems` and `minimum`/`maximum` was also rejected;
+- both returned HTTP 400 `INVALID_ARGUMENT`: "The specified schema produces a constraint that has too many
+  states for serving."
+
+The provider schema is therefore the flattened structure with **types, enums and required fields only**.
+Length, item-count and numeric-range bounds are intentionally not sent to the provider; the writer prompt
+states them in words. The application stays the authority: the model output is parsed and G1 validates
+it against the strict Pydantic models with every bound, then G2 runs unchanged. A bound violation is an
+ordinary G1 violation fed into the writer retry loop (§5.4).
 
 ### 5.4 Writer and critic
 
@@ -718,7 +728,8 @@ Every paid Gemini call (writer, critic, TTS, ASR, calibration and live-test call
    SQLite serialises `BEGIN IMMEDIATE` writers across processes, so two concurrent calls cannot both pass on the same remaining headroom.
 3. **Call the provider.**
 4. **Settle immediately.** Settlement runs in `finally`, so it happens on success, error and timeout alike:
-   `UPDATE cost_entries SET status=:ok|error, usd=:usd, cost_source=:src, units_json=:units, error_code=:err, settled_at=:now WHERE id=:rid AND status='reserved'`.
+   `UPDATE cost_entries SET status=:ok|error, usd=:usd, cost_source=:src, units_json=:units, error_code=:err, error_message=:msg, settled_at=:now WHERE id=:rid AND status='reserved'`.
+   A failed call also logs `provider_call_failed` with the error code, HTTP status and the provider's message (secrets redacted).
    - **Success:** `actual` from `usage_metadata` × price. If metadata is missing, `estimated` (text tokens ≈ characters ÷ 4; TTS audio tokens = seconds × 25; audio input tokens = seconds × 32).
    - **Rejected before processing** (HTTP 400/401/403/429): `usd=0`, `cost_source=estimated`.
    - **Timeouts and 5xx:** estimated input-token cost, since the request may have been processed.
@@ -1028,3 +1039,23 @@ All seven were approved without modification.
   - `render_compute` excluded from budgets (§9.3);
   - per-video cost table separates billable and estimated production cost (§9.3).
 - **Verification markers added:** single-sample TTS token rate, Veo prices, all Gemini text/TTS prices, Flash-Lite audio input price (unknown), failed-call billing assumption.
+
+**2026-09-14, revision 3** (provider compatibility, approved by the user)
+
+- **Provider JSON schema reduced to type/enum/required** (§5.3). In the first live writer test Gemini
+  (`gemini-2.5-flash`) rejected both the strict discriminated-union schema and a flattened schema that kept
+  length, item-count and numeric bounds, each with HTTP 400 `INVALID_ARGUMENT` "The specified schema produces
+  a constraint that has too many states for serving." The flattened schema without bounds was accepted.
+  - Why: structured output is a provider feature with serving limits; the bounds are business rules that
+    already live in the Pydantic models and G1, so moving them out of the provider schema loses no
+    enforcement. G1 and G2 are unchanged and remain authoritative; the writer prompt states the limits.
+  - Consequence: the model can now return a structurally valid storyboard that breaks a bound (seen in the
+    accepted run: a `key_points` visual with 5 points where at most 4 are allowed). G1 rejects it and the writer retry loop
+    (§5.4) handles it.
+- **Provider error messages retained** (§4.2, §9.3): `cost_entries.error_message` stores the provider's own
+  message (secrets redacted, at most 1000 characters) next to `error_code`, and a failed call logs
+  `provider_call_failed`. Why: the first rejection could not be diagnosed from `error_code=invalid_request`
+  alone. Existing ledgers gain the column in place; no row is rewritten or deleted.
+- **Automatic function calling disabled** on Gemini text calls (no tools are passed).
+- **Critic provider schema follows the same rule:** scores are plain integers and `scene_index` is optional
+  (omitted for storyboard-wide issues); `CriticVerdict` still enforces scores 1..5.

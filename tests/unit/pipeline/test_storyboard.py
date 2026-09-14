@@ -208,6 +208,37 @@ def test_provider_schema_has_no_refs_or_oneof() -> None:
             assert field in visual["properties"], (visual_type, field)
 
 
+def _keywords(node: object) -> set[str]:
+    """JSON Schema keywords used anywhere in the schema; property names are not keywords."""
+    found: set[str] = set()
+    if isinstance(node, dict):
+        for k, v in node.items():
+            found.add(k)
+            children = v.values() if k == "properties" and isinstance(v, dict) else [v]
+            for child in children:
+                found |= _keywords(child)
+    elif isinstance(node, list):
+        for item in node:
+            found |= _keywords(item)
+    return found
+
+
+_PROVIDER_DROPPED = {"maxLength", "minLength", "minimum", "maximum", "minItems", "maxItems"}
+
+
+def test_provider_schema_keeps_only_type_enum_required() -> None:
+    # Gemini rejected bounded schemas ("too many states for serving"); limits stay in G1 (spec §5.3)
+    schema = provider_json_schema()
+    assert not _walk_keys(schema) & _PROVIDER_DROPPED
+    assert _keywords(schema) == {"type", "properties", "items", "enum", "required"}
+    # the application schema keeps every bound
+    assert _walk_keys(strict_json_schema()) >= _PROVIDER_DROPPED
+    raw = _base()
+    raw["scenes"][0]["narration"] = "word " * 121  # 605 chars > 600
+    with pytest.raises(ValidationError):
+        Storyboard.model_validate(raw)
+
+
 def test_flattened_payload_validates_into_strict_model() -> None:
     raw = _base()
     all_fields = provider_json_schema()["properties"]["scenes"]["items"]["properties"]["visual"][
