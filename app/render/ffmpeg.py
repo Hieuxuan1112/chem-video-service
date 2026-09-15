@@ -97,12 +97,23 @@ def media_duration(path: Path) -> float:
 
 
 def make_color_video(
-    path: Path, *, frames: int, fps: int, size: tuple[int, int], color: str
+    path: Path,
+    *,
+    frames: int,
+    fps: int,
+    size: tuple[int, int],
+    color: str,
+    box_cell: int | None = None,
 ) -> None:
+    """Solid colour; with box_cell (0..8) also a white box filling that cell of a 3x3 grid."""
     width, height = size
+    source = f"color=c={color}:s={width}x{height}:r={fps}"
+    if box_cell is not None:
+        x, y = box_cell % 3 * width // 3, box_cell // 3 % 3 * height // 3
+        source += f",drawbox=x={x}:y={y}:w={width // 3}:h={height // 3}:color=white:t=fill"
     run_ffmpeg(
         [
-            "-f", "lavfi", "-i", f"color=c={color}:s={width}x{height}:r={fps}",
+            "-f", "lavfi", "-i", source,
             "-frames:v", str(frames), "-c:v", "libx264", "-pix_fmt", "yuv420p", str(path),
         ]
     )  # fmt: skip

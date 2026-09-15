@@ -79,6 +79,21 @@ class Settings(BaseSettings):
     final_tail_s: float = 1.5
     render_timeout_s: float = 900.0
 
+    # Media QA thresholds (spec 8.5; provisional until confirmed on curated renders in Task 9.1)
+    qa_min_total_s: float = 40.0
+    qa_max_total_s: float = 120.0
+    qa_av_tolerance_s: float = 0.1
+    qa_plan_tolerance_s: float = 0.5
+    qa_mean_volume_db: float = -35.0
+    qa_max_volume_db: float = -1.0
+    qa_lufs_min: float = -19.0
+    qa_lufs_max: float = -13.0
+    qa_max_silence_s: float = 2.0
+    qa_black_s: float = 1.0
+    qa_freeze_s: float = 10.0
+    qa_min_luma_std: float = 8.0
+    qa_min_hash_distance: int = 6
+
     # Storyboard rules (spec §5.3, §5.5)
     min_scenes: int = 5
     max_scenes: int = 7

@@ -348,3 +348,20 @@ def test_asr_skip_during_fallback_run_is_reported(tmp_path: Path, clock: FakeClo
     outcome = voicer.voice(storyboard=_storyboard(), pack=PACK, out_dir=tmp_path / "out")
     assert outcome.provider == "fallback"
     assert (outcome.asr_skipped, outcome.asr_skip_reason) == (True, "provider_error")
+
+
+def test_tts_ledger_rows_carry_job_context_from_worker_threads(
+    tmp_path: Path, clock: FakeClock
+) -> None:
+    s = _settings(tts_concurrency=2)
+    ledger = Ledger(tmp_path / "ledger.sqlite", clock)
+    guard = SpendGuard(ledger, s, clock)
+    primary = GuardedFakeTTS(FakeTTS(name="primary"), guard)
+    voicer = Voicer(primary, FakeTTS(name="fallback"), None, TTSCache(tmp_path / "cache"), guard, s)
+
+    with job_context(job_id="vid_ctx", attempt=2, worker_id="w"):
+        voicer.voice(storyboard=_storyboard(), pack=PACK, out_dir=tmp_path / "out")
+
+    rows = [dict(r) for r in ledger._conn().execute("SELECT * FROM cost_entries ORDER BY id")]
+    assert len(rows) == N
+    assert {(r["job_id"], r["attempt"]) for r in rows} == {("vid_ctx", 2)}  # per-job budget applies

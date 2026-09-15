@@ -1,5 +1,6 @@
 """HTTP routes (spec §9.2)."""
 
+import json
 import mimetypes
 import re
 import shutil
@@ -149,15 +150,22 @@ def get_video(request: Request, job_id: str) -> VideoJobDetail:
     ]
     cost = CostOut(**container.job_cost(job_id)) if container.job_cost is not None else CostOut()
     artifacts: list[ArtifactRefOut] = []
+    quality: dict[str, Any] | None = None
+    stage_durations: dict[str, float] = {}
     if job.status is JobStatus.SUCCEEDED and container.artifacts is not None:
         artifacts = [ArtifactRefOut(**ref) for ref in container.artifacts.list_refs(job_id)]
+        manifest = container.artifacts.manifest(job_id) or {}
+        stage_durations = manifest.get("stage_durations_s", {})
+        report = container.artifacts.open(job_id, "quality_report.json")
+        if report is not None:
+            quality = json.loads(report.read_text(encoding="utf-8")).get("summary")
     return VideoJobDetail(
         **job_to_dto(job).model_dump(),
         events=events,
-        quality=None,
+        quality=quality,
         cost=cost,
         artifacts=artifacts,
-        stage_durations_s={},
+        stage_durations_s=stage_durations,
     )
 
 

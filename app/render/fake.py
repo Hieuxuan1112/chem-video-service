@@ -21,7 +21,11 @@ class FakeRenderer:
     version = "fake-1"
 
     def __init__(self, script: Mapping[int, str] | None = None) -> None:
-        """script maps scene index to "ok" | "crash" | "template_error" | "black" | "off_by_one"."""
+        """script maps scene index to "ok" | "crash" | "template_error" | "black" | "off_by_one" |
+        "blank" (background only) | "same" (the picture of scene 0).
+
+        "ok" draws a white box in a different grid cell per scene, so scenes are distinguishable.
+        """
         self._script = dict(script or {})
         self.calls: list[list[int]] = []
 
@@ -54,6 +58,7 @@ class FakeRenderer:
                 fps=plan.fps,
                 size=(plan.width, plan.height),
                 color="black" if mode == "black" else _COLOR,
+                box_cell=None if mode in ("black", "blank") else 0 if mode == "same" else index % 9,
             )
             results.append(SceneRenderResult(index, True, path, frames, None, None))
         return RenderResult(results, self.name, self.version, cpu_seconds=0.0)

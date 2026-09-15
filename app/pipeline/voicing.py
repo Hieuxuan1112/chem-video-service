@@ -1,5 +1,6 @@
 """Per-scene voicing with A1-A5 validation, a TTS cache and a one-voice video fallback (spec §7)."""
 
+import contextvars
 import io
 import re
 import threading
@@ -234,7 +235,16 @@ class Voicer:
     ) -> list[VoicedClip]:
         with ThreadPoolExecutor(max_workers=self._settings.tts_concurrency) as pool:
             futures = [
-                pool.submit(self._voice_scene, i, text, provider, out_dir, run)
+                # copy_context: job/attempt/stage contextvars reach the ledger from pool threads
+                pool.submit(
+                    contextvars.copy_context().run,
+                    self._voice_scene,
+                    i,
+                    text,
+                    provider,
+                    out_dir,
+                    run,
+                )
                 for i, text in enumerate(texts)
             ]
         clips: list[VoicedClip] = []
