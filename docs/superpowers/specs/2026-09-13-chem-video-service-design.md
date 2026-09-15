@@ -1,7 +1,7 @@
 # AI Chemistry Video Request Service — Design Spec
 
 - **Date:** 2026-09-13
-- **Status:** Approved (Parts 1–4 and §14 refinements). Revision 2 applies the budget correction and a consistency pass (§15). Revision 3 records a provider schema compatibility change (§15).
+- **Status:** Approved (Parts 1–4 and §14 refinements). Revision 2 applies the budget correction and a consistency pass (§15). Revision 3 records a provider schema compatibility change (§15). Revision 4 records a render scheduling rule for crowded beats (§15).
 - **Scope source:** `Agentic_Backend_Challenge_AI_Chemistry_Video_Request_Service.pdf` (Growtrics coding challenge)
 - **Implementation state at time of writing:** nothing implemented. Only throw-away feasibility spikes were run (see §2).
 
@@ -589,6 +589,7 @@ class Renderer(Protocol):
 - **Frame exactness.** Each template's final wait fills the scene to `end_frame − start_frame`. After rendering, `ffprobe -count_frames` must match. A difference of ≤ 1 frame is corrected in assembly (trim or clone last frame) and logged; a larger difference is `RENDER_TEMPLATE_ERROR`.
 - Successful scenes are checkpointed individually (`rendering/scene-NN`).
 - **Templates only extend holds.** They never speed animations up. Every element animates in; the scene fades out in its last 0.3 s.
+- **Crowded beats.** A reveal starts at its beat, or earlier when waiting would leave too little room: `start = min(beat, scene_end − fade − own_duration − 1.0 s × later_beat_targets)`. Every beat reveal lasts at most 1.0 s. Only holds are shortened; if the animations alone exceed the scene, it is still `RENDER_TEMPLATE_ERROR`.
 - **Theme:**
   - Background `#0F172A`; text contrast ≥ 4.5:1.
   - Discrete universal-indicator palette for pH 0–14; electrons yellow; CPK element colours.
@@ -1059,3 +1060,20 @@ All seven were approved without modification.
 - **Automatic function calling disabled** on Gemini text calls (no tools are passed).
 - **Critic provider schema follows the same rule:** scores are plain integers and `scene_index` is optional
   (omitted for storyboard-wide issues); `CriticVerdict` still enforces scores 1..5.
+
+**2026-09-15, revision 4** (render scheduling, approved by the user)
+
+- **Crowded beats start early** (§8.2). The curated `ph_scale` storyboard failed to render its `log_ratio`
+  scene with `TemplateOverrunError` (19 frames short). Its narration mentions "ten times", then "pH 3", then
+  "pH 4"; §8.1 makes beats monotonic in reveal order (from, to, ratio), so all three beats were clamped to
+  `lead_in + clip − 0.5`. After that point only 0.5 s + the 0.7 s tail remain, while the three reveals
+  (0.8 + 0.8 + 0.6 s) and the 0.3 s fade need about 2.5 s. The tail is fixed, so a longer TTS clip does not
+  help and every real `ph_scale` job would have failed with a non-retryable error.
+  - Rule: a reveal starts at `min(beat, scene_end − fade − own_duration − 1.0 s × later_beat_targets)`; beat
+    reveals are capped at 1.0 s. Holds are shortened, animations are never sped up, and a scene whose
+    animations alone exceed its frames is still `RENDER_TEMPLATE_ERROR`.
+  - Why in the renderer, not in §8.1 beats: only the renderer knows animation durations and the fade length;
+    the plan stays renderer-agnostic.
+  - Consequence: in crowded scenes an element can appear up to about a second before its narration mention.
+  - `key_points` shows the question recap first (before the ticked points), so no untimed animation follows
+    the last beat.

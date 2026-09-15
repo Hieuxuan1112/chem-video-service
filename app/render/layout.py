@@ -37,6 +37,7 @@ def _build_layout() -> dict[str, Slot]:
         Slot("on_screen_title", 64, 36, 1152, 68, 44, 1, "bold"),
         Slot("title_card.question", 140, 200, 1000, 150, 40, 3, "semibold"),
         Slot("title_card.subtitle", 140, 380, 1000, 100, 32, 2, "regular"),
+        Slot("key_points.recap", 190, 534, 930, 28, 20, 1, "regular"),
         Slot("comparison_table.header.left", 330, 124, 420, 52, 30, 1, "bold"),
         Slot("comparison_table.header.right", 760, 124, 420, 52, 30, 1, "bold"),
         Slot("ph_scale.marker", 0, 0, 170, 56, 20, 2, "semibold"),
