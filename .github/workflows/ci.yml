@@ -10,8 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
-      # pycairo (a manim dependency) has no Linux wheel, so it builds against libcairo.
-      - run: sudo apt-get update && sudo apt-get install -y ffmpeg libcairo2-dev pkg-config
+      # pycairo and manimpango (manim dependencies) build from source on Linux against Cairo and Pango.
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg libcairo2-dev libpango1.0-dev pkg-config
       - run: uv sync --group dev
       - run: uv run ruff check .
       - run: uv run ruff format --check .
