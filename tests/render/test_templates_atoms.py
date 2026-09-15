@@ -3,12 +3,12 @@ from typing import Any
 
 import numpy as np
 import pytest
-from app.render.manim.templates._atoms import bohr_atom, ion_label, shell_radius_px
 from manim import Dot
 
 from app.pipeline.storyboard import ElectronSharing, ElectronTransfer
 from app.render.manim import theme
 from app.render.manim.scene_factory import assert_inside_safe_area
+from app.render.manim.templates._atoms import bohr_atom, ion_label, shell_radius_px
 from app.render.plan import (
     ResolvedAtom,
     ResolvedAtomShells,
