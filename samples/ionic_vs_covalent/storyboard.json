@@ -1,0 +1,81 @@
+{
+  "schema_version": "1",
+  "topic_id": "ionic_vs_covalent",
+  "title": "Ionic vs. Covalent Bonds: Sharing or Transferring Electrons?",
+  "learning_objective": "Understand the fundamental differences between ionic and covalent bonding, including electron behavior, atom types involved, and how stability is achieved.",
+  "scenes": [
+    {
+      "on_screen_title": "What are Chemical Bonds?",
+      "narration": "Atoms bond together to become more stable, usually by getting a full outer shell of electrons. There are two main types of chemical bonds: ionic and covalent. We'll explore how they form and what makes them different.",
+      "visual": {
+        "type": "title_card",
+        "subtitle": "Ionic vs. Covalent Bonding"
+      }
+    },
+    {
+      "on_screen_title": "Ionic Bonding: Electron Transfer",
+      "narration": "In ionic bonding, electrons are transferred from a metal atom to a non-metal atom. For example, in sodium chloride, sodium (a metal) gives an electron to chlorine (a non-metal). Both atoms become stable with full outer shells.",
+      "visual": {
+        "type": "electron_transfer",
+        "compound": "NaCl"
+      }
+    },
+    {
+      "on_screen_title": "Ions and Attraction",
+      "narration": "When sodium loses an electron, it becomes a positive ion. Chlorine gains an electron and becomes a negative ion. These resulting ions have opposite charges and attract each other strongly, forming the ionic bond.",
+      "visual": {
+        "type": "atom_shells",
+        "elements": [
+          "Na",
+          "Cl"
+        ]
+      }
+    },
+    {
+      "on_screen_title": "Covalent Bonding: Electron Sharing",
+      "narration": "In covalent bonding, electrons are shared between non-metal atoms. For instance, two chlorine atoms, both non-metals, share a pair of electrons. This sharing allows each atom to achieve a stable, full outer shell.",
+      "visual": {
+        "type": "electron_sharing",
+        "molecule": "Cl2"
+      }
+    },
+    {
+      "on_screen_title": "Comparing Bond Types",
+      "narration": "Both ionic and covalent bonds help atoms achieve stable electron configurations, but they do it differently. Ionic bonds involve a complete transfer of electrons, while covalent bonds involve the sharing of electrons between atoms.",
+      "visual": {
+        "type": "comparison_table",
+        "left_header": "Ionic Bond",
+        "right_header": "Covalent Bond",
+        "rows": [
+          {
+            "aspect": "Electron Behavior",
+            "left": "Electrons transferred",
+            "right": "Electrons shared"
+          },
+          {
+            "aspect": "Atoms Involved",
+            "left": "Metal + Non-metal",
+            "right": "Non-metal + Non-metal"
+          },
+          {
+            "aspect": "Result",
+            "left": "Oppositely charged ions",
+            "right": "Molecules"
+          }
+        ]
+      }
+    },
+    {
+      "on_screen_title": "Key Differences",
+      "narration": "Remember, ionic bonds form when electrons are transferred, creating charged ions that attract. Covalent bonds form when electrons are shared between atoms. Both methods allow atoms to reach stable, full outer shells.",
+      "visual": {
+        "type": "key_points",
+        "points": [
+          "Ionic: Electrons transferred",
+          "Covalent: Electrons shared",
+          "Both achieve stable outer shells"
+        ]
+      }
+    }
+  ]
+}

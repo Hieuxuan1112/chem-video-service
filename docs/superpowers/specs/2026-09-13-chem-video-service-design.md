@@ -1,7 +1,7 @@
 # AI Chemistry Video Request Service — Design Spec
 
 - **Date:** 2026-09-13
-- **Status:** Approved (Parts 1–4 and §14 refinements). Revision 2 applies the budget correction and a consistency pass (§15). Revision 3 records a provider schema compatibility change (§15). Revision 4 records a render scheduling rule for crowded beats (§15).
+- **Status:** Approved (Parts 1–4 and §14 refinements). Revision 2 applies the budget correction and a consistency pass (§15). Revision 3 records a provider schema compatibility change (§15). Revision 4 records a render scheduling rule for crowded beats (§15). Revision 5 narrows the Q5 duplicate-scene check (§15).
 - **Scope source:** `Agentic_Backend_Challenge_AI_Chemistry_Video_Request_Service.pdf` (Growtrics coding challenge)
 - **Implementation state at time of writing:** nothing implemented. Only throw-away feasibility spikes were run (see §2).
 
@@ -630,7 +630,7 @@ class Renderer(Protocol):
 | **Q2 Duration** | total 40–120 s; \|video − audio\| ≤ 0.1 s; \|actual − planned\| ≤ 0.5 s |
 | **Q3 Audio** | `volumedetect` mean > −35 dB and max ≤ −1.0 dB; `ebur128` integrated loudness in [−19, −13] LUFS; no `silencedetect` gap > 2.0 s outside planned padding |
 | **Q4 Video** | `blackdetect` (pic_th 0.98) no segment ≥ 1.0 s; `freezedetect` no freeze ≥ 10 s |
-| **Q5 Sanity** | per-scene midpoint frame luma standard deviation > 8; perceptual-hash Hamming distance between consecutive scene frames ≥ 6. These are sanity checks against blank or duplicated renders, not a semantic quality evaluation. |
+| **Q5 Sanity** | per-scene midpoint frame luma standard deviation > 8; perceptual-hash Hamming distance ≥ 6 between consecutive scene frames of different visual types. These are sanity checks against blank or duplicated renders, not a semantic quality evaluation. |
 
 - The Q3–Q5 thresholds are confirmed against renders of the three curated storyboards during implementation. Any change is recorded in `docs/RELIABILITY.md`.
 - **Failure handling.** File read or ffprobe I/O errors → `QUALITY_CHECK_FAILED / io_error` (retryable). A deterministic rule violation → `QUALITY_CHECK_FAILED / deterministic_output_bug` (non-retryable). The report is always written.
@@ -1077,3 +1077,15 @@ All seven were approved without modification.
   - Consequence: in crowded scenes an element can appear up to about a second before its narration mention.
   - `key_points` shows the question recap first (before the ticked points), so no untimed animation follows
     the last beat.
+
+**2026-09-15, revision 5** (media QA, approved by the user)
+
+- **Q5 hash distance only between neighbours of different visual types** (§8.5). The first full-resolution
+  render of the curated `ph_scale` storyboard (real Manim, fake LLM/TTS) passed every Q1–Q5 rule except
+  the hash distance between scenes 1 and 2, both `ph_scale` with different titles and markers: 8×8
+  average-hash distance 2 (16×16: 3; 1.2 % of pixels changed). Other neighbours measured 9–21. Two
+  consecutive scenes from the same template share their layout, so this rule would fail every such job
+  with a non-retryable error.
+  - Why not a lower threshold: 2 was the measured value, so any threshold that passes it sits on the edge.
+  - Consequence: a duplicated render between two same-type neighbours is not caught by Q5; per-scene
+    checkpoint input hashes still bind each scene video to its own planned scene.

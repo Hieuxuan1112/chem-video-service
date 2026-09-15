@@ -1,0 +1,644 @@
+{
+  "summary": {
+    "generation_source": "llm",
+    "fallback_reason": null,
+    "writer_attempts": 3,
+    "critic_scores": {
+      "accuracy": 5,
+      "relevance": 5,
+      "clarity": 5,
+      "alignment": 5
+    },
+    "critic_skipped": false,
+    "asr_skipped": false,
+    "voice_provider": "gemini",
+    "media_qa_passed": true
+  },
+  "writer": {
+    "generation_source": "llm",
+    "fallback_reason": null,
+    "attempts": [
+      {
+        "attempt": 1,
+        "g1": {
+          "gate": "G1",
+          "passed": true,
+          "violations": [],
+          "details": {}
+        },
+        "g2": [
+          {
+            "gate": "G2_rules",
+            "passed": false,
+            "violations": [
+              {
+                "gate": "G2a",
+                "code": "duration_out_of_range",
+                "message": "Estimated video length is 110.6 s; it must be 45-100 s. Adjust narration length.",
+                "scene_index": null
+              }
+            ],
+            "details": {
+              "estimated_duration_s": 110.6
+            }
+          },
+          {
+            "gate": "G2_claims",
+            "passed": false,
+            "violations": [
+              {
+                "gate": "G2c",
+                "code": "claim_ph_ratio",
+                "message": "Scene 6: \"Remember, it measures hydrogen ions, runs from 0 to 14, and each number represents a tenfold change\" is wrong: 14 pH unit(s) is a 1e+14x change in hydrogen ions, not 10x.",
+                "scene_index": 6
+              }
+            ],
+            "details": {
+              "claims_checked": 10,
+              "unverified_numeric_claims": [
+                "Below 7 is acidic, above 7 is basic"
+              ]
+            }
+          },
+          {
+            "gate": "G2_layout",
+            "passed": true,
+            "violations": [],
+            "details": {
+              "strings_checked": 15
+            }
+          }
+        ],
+        "g3": null,
+        "critic_skipped": false,
+        "passed": false
+      },
+      {
+        "attempt": 2,
+        "g1": {
+          "gate": "G1",
+          "passed": true,
+          "violations": [],
+          "details": {}
+        },
+        "g2": [
+          {
+            "gate": "G2_rules",
+            "passed": false,
+            "violations": [
+              {
+                "gate": "G2a",
+                "code": "duration_out_of_range",
+                "message": "Estimated video length is 106.2 s; it must be 45-100 s. Adjust narration length.",
+                "scene_index": null
+              }
+            ],
+            "details": {
+              "estimated_duration_s": 106.2
+            }
+          },
+          {
+            "gate": "G2_claims",
+            "passed": true,
+            "violations": [],
+            "details": {
+              "claims_checked": 11,
+              "unverified_numeric_claims": [
+                "Below 7 is acidic, above 7 is basic"
+              ]
+            }
+          },
+          {
+            "gate": "G2_layout",
+            "passed": true,
+            "violations": [],
+            "details": {
+              "strings_checked": 20
+            }
+          }
+        ],
+        "g3": null,
+        "critic_skipped": false,
+        "passed": false
+      },
+      {
+        "attempt": 3,
+        "g1": {
+          "gate": "G1",
+          "passed": true,
+          "violations": [],
+          "details": {}
+        },
+        "g2": [
+          {
+            "gate": "G2_rules",
+            "passed": true,
+            "violations": [],
+            "details": {
+              "estimated_duration_s": 87.0
+            }
+          },
+          {
+            "gate": "G2_claims",
+            "passed": true,
+            "violations": [],
+            "details": {
+              "claims_checked": 10,
+              "unverified_numeric_claims": [
+                "It measures hydrogen ions, runs from 0 to 14, and each unit is a tenfold change",
+                "Below 7 is acidic, above 7 is basic"
+              ]
+            }
+          },
+          {
+            "gate": "G2_layout",
+            "passed": true,
+            "violations": [],
+            "details": {
+              "strings_checked": 20
+            }
+          }
+        ],
+        "g3": {
+          "accuracy": 5,
+          "relevance": 5,
+          "clarity": 5,
+          "alignment": 5,
+          "issues": []
+        },
+        "critic_skipped": false,
+        "passed": true
+      }
+    ],
+    "unverified_claims": [
+      "It measures hydrogen ions, runs from 0 to 14, and each unit is a tenfold change",
+      "Below 7 is acidic, above 7 is basic"
+    ],
+    "critic_scores": {
+      "accuracy": 5,
+      "relevance": 5,
+      "clarity": 5,
+      "alignment": 5
+    },
+    "critic_skipped": false,
+    "prompt_versions": {
+      "writer": "writer_v1",
+      "rewrite": "rewrite_v1",
+      "critic": "critic_v1"
+    }
+  },
+  "voicing": {
+    "provider": "gemini",
+    "voice": "Kore",
+    "voice_fallback_reason": null,
+    "asr_skipped": false,
+    "asr_skip_reason": null,
+    "a5_mode": "report_only",
+    "clips": [
+      {
+        "scene_index": 0,
+        "duration_s": 11.08,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 11.530958333333333,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 0.865625,
+            "threshold": "0.6-1.6",
+            "message": "duration 11.08 s vs expected 12.80 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -14.102834467096608,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -14.1 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.03333333333333333,
+            "threshold": "report-only",
+            "message": "WER 0.03"
+          }
+        ],
+        "wer": 0.03333333333333333
+      },
+      {
+        "scene_index": 1,
+        "duration_s": 12.62,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 12.970958333333334,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 1.0879310344827586,
+            "threshold": "0.6-1.6",
+            "message": "duration 12.62 s vs expected 11.60 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -16.693815813584653,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -16.7 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "report-only",
+            "message": "WER 0.00"
+          }
+        ],
+        "wer": 0.0
+      },
+      {
+        "scene_index": 2,
+        "duration_s": 11.28,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 11.530958333333333,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 1.0846153846153845,
+            "threshold": "0.6-1.6",
+            "message": "duration 11.28 s vs expected 10.40 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -17.69325285980336,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -17.7 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "report-only",
+            "message": "WER 0.00"
+          }
+        ],
+        "wer": 0.0
+      },
+      {
+        "scene_index": 3,
+        "duration_s": 11.36,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 11.730958333333334,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 0.9793103448275862,
+            "threshold": "0.6-1.6",
+            "message": "duration 11.36 s vs expected 11.60 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -18.721188203104287,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -18.7 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "report-only",
+            "message": "WER 0.00"
+          }
+        ],
+        "wer": 0.0
+      },
+      {
+        "scene_index": 4,
+        "duration_s": 15.04,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 15.370958333333334,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 1.2533333333333332,
+            "threshold": "0.6-1.6",
+            "message": "duration 15.04 s vs expected 12.00 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -19.31890531661667,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -19.3 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "report-only",
+            "message": "WER 0.00"
+          }
+        ],
+        "wer": 0.0
+      },
+      {
+        "scene_index": 5,
+        "duration_s": 12.76,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 13.090958333333333,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 0.8861111111111111,
+            "threshold": "0.6-1.6",
+            "message": "duration 12.76 s vs expected 14.40 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -16.443438615058582,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -16.4 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "report-only",
+            "message": "WER 0.00"
+          }
+        ],
+        "wer": 0.0
+      },
+      {
+        "scene_index": 6,
+        "duration_s": 12.22,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 12.410958333333333,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 1.0534482758620691,
+            "threshold": "0.6-1.6",
+            "message": "duration 12.22 s vs expected 11.60 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -18.37797459801798,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -18.4 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "report-only",
+            "message": "WER 0.00"
+          }
+        ],
+        "wer": 0.0
+      }
+    ]
+  },
+  "media_qa": {
+    "passed": true,
+    "checks": [
+      {
+        "name": "Q1_video_stream",
+        "passed": true,
+        "value": [
+          [
+            "h264",
+            "yuv420p",
+            1280,
+            720,
+            "30/1"
+          ]
+        ],
+        "threshold": "one ('h264', 'yuv420p', 1280, 720, '30/1')",
+        "cause": null
+      },
+      {
+        "name": "Q1_audio_stream",
+        "passed": true,
+        "value": [
+          [
+            "aac",
+            "48000"
+          ]
+        ],
+        "threshold": "one ('aac', '48000')",
+        "cause": null
+      },
+      {
+        "name": "Q1_faststart",
+        "passed": true,
+        "value": null,
+        "threshold": "moov before mdat",
+        "cause": null
+      },
+      {
+        "name": "Q2_total_duration",
+        "passed": true,
+        "value": 94.166,
+        "threshold": "[40.0, 120.0] s",
+        "cause": null
+      },
+      {
+        "name": "Q2_av_sync",
+        "passed": true,
+        "value": 0.0,
+        "threshold": "<= 0.1 s",
+        "cause": null
+      },
+      {
+        "name": "Q2_plan_duration",
+        "passed": true,
+        "value": -0.001,
+        "threshold": "|actual - 94.167| <= 0.5 s",
+        "cause": null
+      },
+      {
+        "name": "Q3_mean_volume",
+        "passed": true,
+        "value": -17.0,
+        "threshold": "> -35.0 dB",
+        "cause": null
+      },
+      {
+        "name": "Q3_max_volume",
+        "passed": true,
+        "value": -1.4,
+        "threshold": "<= -1.0 dB",
+        "cause": null
+      },
+      {
+        "name": "Q3_loudness",
+        "passed": true,
+        "value": -16.3,
+        "threshold": "[-19.0, -13.0] LUFS",
+        "cause": null
+      },
+      {
+        "name": "Q3_silence",
+        "passed": true,
+        "value": 0.0,
+        "threshold": "<= 2.0 s outside planned padding",
+        "cause": null
+      },
+      {
+        "name": "Q4_black",
+        "passed": true,
+        "value": 0.0,
+        "threshold": "< 1.0 s",
+        "cause": null
+      },
+      {
+        "name": "Q4_freeze",
+        "passed": true,
+        "value": 0.0,
+        "threshold": "< 10.0 s",
+        "cause": null
+      },
+      {
+        "name": "Q5_luma_std",
+        "passed": true,
+        "value": [
+          24.26,
+          37.32,
+          36.89,
+          36.87,
+          25.09,
+          23.63,
+          23.13
+        ],
+        "threshold": "> 8.0",
+        "cause": null
+      },
+      {
+        "name": "Q5_scene_hash_distance",
+        "passed": true,
+        "value": [
+          21,
+          20,
+          17,
+          15
+        ],
+        "threshold": ">= 6 between neighbours of different visual types",
+        "cause": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "checkpoint_attempts": {
+    "quality_check": 1,
+    "rendering": 1,
+    "rendering/scene-00": 1,
+    "rendering/scene-01": 1,
+    "rendering/scene-02": 1,
+    "rendering/scene-03": 1,
+    "rendering/scene-04": 1,
+    "rendering/scene-05": 1,
+    "reviewing": 1,
+    "voicing": 1
+  },
+  "cost": {
+    "billable_actual_usd": 0.0289968,
+    "billable_estimated_usd": 0.0032635999999999997,
+    "billable_usd": 0.032260399999999995,
+    "by_operation": {
+      "asr": 0.0032635999999999997,
+      "critic": 0.0001843,
+      "tts": 0.0242035,
+      "writer": 0.004609
+    },
+    "estimated_production_compute_usd": 0.0,
+    "failed_call_usd": 0.0,
+    "free_calls": 0,
+    "pricing_version": "2026-09-13"
+  },
+  "created_at": 1789458770.5713513,
+  "fallback_reason": null,
+  "files": {
+    "captions.vtt": {
+      "bytes": 2686,
+      "content_type": "text/vtt",
+      "sha256": "fd3805bc630415fd4e5bee110f394668a7926a55397a197392cec8971f8fd67f"
+    },
+    "contact_sheet.jpg": {
+      "bytes": 23921,
+      "content_type": "image/jpeg",
+      "sha256": "d9a35b2039b1db95cf29e5b0a42e468c60eb831af5163073504a74814b0e7bb8"
+    },
+    "quality_report.json": {
+      "bytes": 13922,
+      "content_type": "application/json",
+      "sha256": "a468d058300207cdd61890b1292296bad073aa86cbc53304e6a8b26070a4a36a"
+    },
+    "storyboard.json": {
+      "bytes": 3314,
+      "content_type": "application/json",
+      "sha256": "d2a9c6b530ceb21f7bae7be50087a02f0020e9b6d073ec6095be62600d0d8988"
+    },
+    "thumbnail.jpg": {
+      "bytes": 26304,
+      "content_type": "image/jpeg",
+      "sha256": "a42b97cf1160a7e188012b8fc5776e3cad9a80b59b75e6c5abfc17dc241fa104"
+    },
+    "video.mp4": {
+      "bytes": 2558211,
+      "content_type": "video/mp4",
+      "sha256": "4715896f58463972e9bb9daebb94268445491483b72be5ce2bb49bfa6f6c4e37"
+    }
+  },
+  "generation_source": "llm",
+  "job_id": "vid_7900ac5fdc8745e7bad528276e955014",
+  "models": {
+    "asr": "gemini-2.5-flash-lite",
+    "critic": "gemini-2.5-flash-lite",
+    "tts": "gemini-2.5-flash-preview-tts",
+    "writer": "gemini-2.5-flash"
+  },
+  "pipeline_version": "1.0.0",
+  "prompt_versions": {
+    "critic": "critic_v1",
+    "rewrite": "rewrite_v1",
+    "writer": "writer_v1"
+  },
+  "renderer_version": "manim-0.21.0+templates-1",
+  "schema_version": "1",
+  "stage_durations_s": {
+    "quality_check": 1.687,
+    "rendering": 227.922,
+    "reviewing": 0.031,
+    "scripting": 11.359,
+    "voicing": 83.328
+  },
+  "topic_pack_version": "1.0.0",
+  "voice": {
+    "fallback_reason": null,
+    "provider": "gemini",
+    "voice": "Kore"
+  }
+}

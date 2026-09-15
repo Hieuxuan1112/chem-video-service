@@ -1,0 +1,545 @@
+{
+  "summary": {
+    "generation_source": "llm",
+    "fallback_reason": null,
+    "writer_attempts": 2,
+    "critic_scores": {
+      "accuracy": 5,
+      "relevance": 5,
+      "clarity": 5,
+      "alignment": 5
+    },
+    "critic_skipped": false,
+    "asr_skipped": false,
+    "voice_provider": "gemini",
+    "media_qa_passed": true
+  },
+  "writer": {
+    "generation_source": "llm",
+    "fallback_reason": null,
+    "attempts": [
+      {
+        "attempt": 1,
+        "g1": {
+          "gate": "G1",
+          "passed": true,
+          "violations": [],
+          "details": {}
+        },
+        "g2": [
+          {
+            "gate": "G2_rules",
+            "passed": false,
+            "violations": [
+              {
+                "gate": "G2a",
+                "code": "fact_missing",
+                "message": "The narration must clearly state: One example of each, such as sodium chloride (ionic) and hydrogen chloride or chlorine (covalent).",
+                "scene_index": null
+              }
+            ],
+            "details": {
+              "estimated_duration_s": 88.8
+            }
+          },
+          {
+            "gate": "G2_claims",
+            "passed": true,
+            "violations": [],
+            "details": {
+              "claims_checked": 0,
+              "unverified_numeric_claims": [
+                "There are two main types of chemical bonds: ionic and covalent",
+                "For instance, two chlorine atoms, both non-metals, share a pair of electrons"
+              ]
+            }
+          },
+          {
+            "gate": "G2_layout",
+            "passed": true,
+            "violations": [],
+            "details": {
+              "strings_checked": 21
+            }
+          }
+        ],
+        "g3": null,
+        "critic_skipped": false,
+        "passed": false
+      },
+      {
+        "attempt": 2,
+        "g1": {
+          "gate": "G1",
+          "passed": true,
+          "violations": [],
+          "details": {}
+        },
+        "g2": [
+          {
+            "gate": "G2_rules",
+            "passed": true,
+            "violations": [],
+            "details": {
+              "estimated_duration_s": 89.6
+            }
+          },
+          {
+            "gate": "G2_claims",
+            "passed": true,
+            "violations": [],
+            "details": {
+              "claims_checked": 0,
+              "unverified_numeric_claims": [
+                "There are two main types of chemical bonds: ionic and covalent",
+                "For instance, two chlorine atoms, both non-metals, share a pair of electrons"
+              ]
+            }
+          },
+          {
+            "gate": "G2_layout",
+            "passed": true,
+            "violations": [],
+            "details": {
+              "strings_checked": 21
+            }
+          }
+        ],
+        "g3": {
+          "accuracy": 5,
+          "relevance": 5,
+          "clarity": 5,
+          "alignment": 5,
+          "issues": []
+        },
+        "critic_skipped": false,
+        "passed": true
+      }
+    ],
+    "unverified_claims": [
+      "There are two main types of chemical bonds: ionic and covalent",
+      "For instance, two chlorine atoms, both non-metals, share a pair of electrons"
+    ],
+    "critic_scores": {
+      "accuracy": 5,
+      "relevance": 5,
+      "clarity": 5,
+      "alignment": 5
+    },
+    "critic_skipped": false,
+    "prompt_versions": {
+      "writer": "writer_v1",
+      "rewrite": "rewrite_v1",
+      "critic": "critic_v1"
+    }
+  },
+  "voicing": {
+    "provider": "gemini",
+    "voice": "Kore",
+    "voice_fallback_reason": null,
+    "asr_skipped": false,
+    "asr_skip_reason": null,
+    "a5_mode": "report_only",
+    "clips": [
+      {
+        "scene_index": 0,
+        "duration_s": 14.74,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 15.050958333333334,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 0.9959459459459459,
+            "threshold": "0.6-1.6",
+            "message": "duration 14.74 s vs expected 14.80 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -16.486936791984245,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -16.5 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "report-only",
+            "message": "WER 0.00"
+          }
+        ],
+        "wer": 0.0
+      },
+      {
+        "scene_index": 1,
+        "duration_s": 17.2,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 17.530958333333334,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 1.162162162162162,
+            "threshold": "0.6-1.6",
+            "message": "duration 17.20 s vs expected 14.80 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -16.689721631567163,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -16.7 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.10256410256410256,
+            "threshold": "report-only",
+            "message": "WER 0.10"
+          }
+        ],
+        "wer": 0.10256410256410256
+      },
+      {
+        "scene_index": 2,
+        "duration_s": 16.04,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 16.330958333333335,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 1.1794117647058824,
+            "threshold": "0.6-1.6",
+            "message": "duration 16.04 s vs expected 13.60 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -18.054117707988432,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -18.1 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "report-only",
+            "message": "WER 0.00"
+          }
+        ],
+        "wer": 0.0
+      },
+      {
+        "scene_index": 3,
+        "duration_s": 16.04,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 16.450958333333332,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 1.215151515151515,
+            "threshold": "0.6-1.6",
+            "message": "duration 16.04 s vs expected 13.20 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -17.22782588583769,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -17.2 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.11428571428571428,
+            "threshold": "report-only",
+            "message": "WER 0.11"
+          }
+        ],
+        "wer": 0.11428571428571428
+      },
+      {
+        "scene_index": 4,
+        "duration_s": 17.04,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 17.250958333333333,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 1.2529411764705882,
+            "threshold": "0.6-1.6",
+            "message": "duration 17.04 s vs expected 13.60 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -17.60318487181328,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -17.6 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "report-only",
+            "message": "WER 0.00"
+          }
+        ],
+        "wer": 0.0
+      },
+      {
+        "scene_index": 5,
+        "duration_s": 15.26,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 15.410958333333333,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 1.1921875,
+            "threshold": "0.6-1.6",
+            "message": "duration 15.26 s vs expected 12.80 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -16.991908560016928,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -17.0 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "report-only",
+            "message": "WER 0.00"
+          }
+        ],
+        "wer": 0.0
+      }
+    ]
+  },
+  "media_qa": {
+    "passed": true,
+    "checks": [
+      {
+        "name": "Q1_video_stream",
+        "passed": true,
+        "value": [
+          [
+            "h264",
+            "yuv420p",
+            1280,
+            720,
+            "30/1"
+          ]
+        ],
+        "threshold": "one ('h264', 'yuv420p', 1280, 720, '30/1')",
+        "cause": null
+      },
+      {
+        "name": "Q1_audio_stream",
+        "passed": true,
+        "value": [
+          [
+            "aac",
+            "48000"
+          ]
+        ],
+        "threshold": "one ('aac', '48000')",
+        "cause": null
+      },
+      {
+        "name": "Q1_faststart",
+        "passed": true,
+        "value": null,
+        "threshold": "moov before mdat",
+        "cause": null
+      },
+      {
+        "name": "Q2_total_duration",
+        "passed": true,
+        "value": 103.133,
+        "threshold": "[40.0, 120.0] s",
+        "cause": null
+      },
+      {
+        "name": "Q2_av_sync",
+        "passed": true,
+        "value": 0.0,
+        "threshold": "<= 0.1 s",
+        "cause": null
+      },
+      {
+        "name": "Q2_plan_duration",
+        "passed": true,
+        "value": -0.0,
+        "threshold": "|actual - 103.133| <= 0.5 s",
+        "cause": null
+      },
+      {
+        "name": "Q3_mean_volume",
+        "passed": true,
+        "value": -16.8,
+        "threshold": "> -35.0 dB",
+        "cause": null
+      },
+      {
+        "name": "Q3_max_volume",
+        "passed": true,
+        "value": -1.1,
+        "threshold": "<= -1.0 dB",
+        "cause": null
+      },
+      {
+        "name": "Q3_loudness",
+        "passed": true,
+        "value": -16.4,
+        "threshold": "[-19.0, -13.0] LUFS",
+        "cause": null
+      },
+      {
+        "name": "Q3_silence",
+        "passed": true,
+        "value": 0.0,
+        "threshold": "<= 2.0 s outside planned padding",
+        "cause": null
+      },
+      {
+        "name": "Q4_black",
+        "passed": true,
+        "value": 0.0,
+        "threshold": "< 1.0 s",
+        "cause": null
+      },
+      {
+        "name": "Q4_freeze",
+        "passed": true,
+        "value": 0.0,
+        "threshold": "< 10.0 s",
+        "cause": null
+      },
+      {
+        "name": "Q5_luma_std",
+        "passed": true,
+        "value": [
+          33.18,
+          29.36,
+          25.09,
+          28.38,
+          27.81,
+          24.63
+        ],
+        "threshold": "> 8.0",
+        "cause": null
+      },
+      {
+        "name": "Q5_scene_hash_distance",
+        "passed": true,
+        "value": [
+          17,
+          8,
+          13,
+          16,
+          15
+        ],
+        "threshold": ">= 6 between neighbours of different visual types",
+        "cause": null
+      }
+    ]
+  }
+}

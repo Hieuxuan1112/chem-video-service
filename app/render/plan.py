@@ -255,8 +255,10 @@ def beat_targets(v: ResolvedVisual) -> list[tuple[str, list[str]]]:
         return targets
     if isinstance(v, ResolvedLogRatio):
         return [
-            ("from", [f"ph of {v.from_ph}", f"ph {v.from_ph}"]),
-            ("to", [f"ph of {v.to_ph}", f"ph {v.to_ph}"]),
+            # Narration usually states the idea before the example numbers, so the concept words
+            # reveal the grids while the idea is explained.
+            ("from", [f"ph of {v.from_ph}", f"ph {v.from_ph}", "logarithmic", "log scale"]),
+            ("to", [f"ph of {v.to_ph}", f"ph {v.to_ph}", "each step", "one step", "ph unit"]),
             ("ratio", _NUMBER_WORDS[v.ratio]),
         ]
     if isinstance(v, ResolvedAtomShells):

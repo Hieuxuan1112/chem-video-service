@@ -112,6 +112,19 @@ def test_identical_scenes_fail_q5(tmp_path: Path, fonts: FontSet) -> None:
     assert "Q5_luma_std" not in _failed(report)
 
 
+def test_same_visual_type_neighbours_are_not_hash_compared(tmp_path: Path, fonts: FontSet) -> None:
+    plan, video = _video(tmp_path, fonts, script=dict.fromkeys(range(6), "same"))
+    first = plan.scenes[0].visual
+    same_type = plan.model_copy(
+        update={"scenes": [sc.model_copy(update={"visual": first}) for sc in plan.scenes]}
+    )
+
+    report = MediaQA(SETTINGS).check(video=video, plan=same_type)
+
+    check = next(c for c in report.checks if c.name == "Q5_scene_hash_distance")
+    assert check.passed and check.value == [], report.to_dict()
+
+
 def test_blank_scene_fails_q5_luma(tmp_path: Path, fonts: FontSet) -> None:
     plan, video = _video(tmp_path, fonts, script={3: "blank"})
 

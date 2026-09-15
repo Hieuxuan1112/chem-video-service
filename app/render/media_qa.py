@@ -250,10 +250,16 @@ class MediaQA:
             with Image.open(image) as img:
                 stds.append(round(float(np.asarray(img.convert("L"), dtype=float).std()), 2))
         hashes = [average_hash(image) for image in images]
-        distances = [(a ^ b).bit_count() for a, b in itertools.pairwise(hashes)]
+        # Neighbours drawn by the same template share a layout and legitimately hash alike
+        # (spec rev 5); only scenes of different visual types are compared.
+        distances = [
+            (a ^ b).bit_count()
+            for (a, sa), (b, sb) in itertools.pairwise(zip(hashes, plan.scenes, strict=True))
+            if sa.visual.type != sb.visual.type
+        ]
         return [
             _check("Q5_luma_std", min(stds) > s.qa_min_luma_std, stds, f"> {s.qa_min_luma_std}"),
             _check("Q5_scene_hash_distance",
                    min(distances, default=math.inf) >= s.qa_min_hash_distance, distances,
-                   f">= {s.qa_min_hash_distance}"),
+                   f">= {s.qa_min_hash_distance} between neighbours of different visual types"),
         ]  # fmt: skip

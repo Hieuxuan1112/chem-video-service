@@ -1,0 +1,509 @@
+{
+  "summary": {
+    "generation_source": "llm",
+    "fallback_reason": null,
+    "writer_attempts": 1,
+    "critic_scores": {
+      "accuracy": 5,
+      "relevance": 5,
+      "clarity": 4,
+      "alignment": 4
+    },
+    "critic_skipped": false,
+    "asr_skipped": false,
+    "voice_provider": "gemini",
+    "media_qa_passed": true
+  },
+  "writer": {
+    "generation_source": "llm",
+    "fallback_reason": null,
+    "attempts": [
+      {
+        "attempt": 1,
+        "g1": {
+          "gate": "G1",
+          "passed": true,
+          "violations": [],
+          "details": {}
+        },
+        "g2": [
+          {
+            "gate": "G2_rules",
+            "passed": true,
+            "violations": [],
+            "details": {
+              "estimated_duration_s": 92.4
+            }
+          },
+          {
+            "gate": "G2_claims",
+            "passed": true,
+            "violations": [],
+            "details": {
+              "claims_checked": 0,
+              "unverified_numeric_claims": [
+                "The hydrogen atom shares one electron with the chlorine atom, and chlorine shares one back",
+                "For hydrogen, a full outer shell means two electrons",
+                "For chlorine, it means eight electrons, also known as an octet"
+              ]
+            }
+          },
+          {
+            "gate": "G2_layout",
+            "passed": true,
+            "violations": [],
+            "details": {
+              "strings_checked": 19
+            }
+          }
+        ],
+        "g3": {
+          "accuracy": 5,
+          "relevance": 5,
+          "clarity": 4,
+          "alignment": 4,
+          "issues": [
+            {
+              "scene_index": 3,
+              "severity": "minor",
+              "message": "The narration states 'The hydrogen atom shares one electron with the chlorine atom, and chlorine shares one back.' While this is true for HCl, the visual shows two hydrogen atoms. This could be confusing. The visual for scene 4 also shows two hydrogen atoms, which is inconsistent with the narration about HCl in scene 3."
+            },
+            {
+              "scene_index": 4,
+              "severity": "minor",
+              "message": "The narration states 'For chlorine, it means eight electrons, also known as an octet.' While chlorine does achieve an octet in HCl, the visual shows two hydrogen atoms, which only need two electrons to be stable. This visual is not aligned with the narration about chlorine's octet."
+            }
+          ]
+        },
+        "critic_skipped": false,
+        "passed": true
+      }
+    ],
+    "unverified_claims": [
+      "The hydrogen atom shares one electron with the chlorine atom, and chlorine shares one back",
+      "For hydrogen, a full outer shell means two electrons",
+      "For chlorine, it means eight electrons, also known as an octet"
+    ],
+    "critic_scores": {
+      "accuracy": 5,
+      "relevance": 5,
+      "clarity": 4,
+      "alignment": 4
+    },
+    "critic_skipped": false,
+    "prompt_versions": {
+      "writer": "writer_v1",
+      "rewrite": "rewrite_v1",
+      "critic": "critic_v1"
+    }
+  },
+  "voicing": {
+    "provider": "gemini",
+    "voice": "Kore",
+    "voice_fallback_reason": null,
+    "asr_skipped": false,
+    "asr_skip_reason": null,
+    "a5_mode": "report_only",
+    "clips": [
+      {
+        "scene_index": 0,
+        "duration_s": 15.82,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 16.130958333333332,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 1.014102564102564,
+            "threshold": "0.6-1.6",
+            "message": "duration 15.82 s vs expected 15.60 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -16.243013386294802,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -16.2 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "report-only",
+            "message": "WER 0.00"
+          }
+        ],
+        "wer": 0.0
+      },
+      {
+        "scene_index": 1,
+        "duration_s": 16.04,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 16.250958333333333,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 1.1794117647058824,
+            "threshold": "0.6-1.6",
+            "message": "duration 16.04 s vs expected 13.60 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -15.815483337261515,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -15.8 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.05714285714285714,
+            "threshold": "report-only",
+            "message": "WER 0.06"
+          }
+        ],
+        "wer": 0.05714285714285714
+      },
+      {
+        "scene_index": 2,
+        "duration_s": 16.8,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 17.370958333333334,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 1.105263157894737,
+            "threshold": "0.6-1.6",
+            "message": "duration 16.80 s vs expected 15.20 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -19.217665698961998,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -19.2 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "report-only",
+            "message": "WER 0.00"
+          }
+        ],
+        "wer": 0.0
+      },
+      {
+        "scene_index": 3,
+        "duration_s": 15.08,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 15.450958333333332,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 1.0472222222222223,
+            "threshold": "0.6-1.6",
+            "message": "duration 15.08 s vs expected 14.40 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -14.76829906933858,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -14.8 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "report-only",
+            "message": "WER 0.00"
+          }
+        ],
+        "wer": 0.0
+      },
+      {
+        "scene_index": 4,
+        "duration_s": 14.18,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 14.410958333333333,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 1.012857142857143,
+            "threshold": "0.6-1.6",
+            "message": "duration 14.18 s vs expected 14.00 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -18.708133205423326,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -18.7 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "report-only",
+            "message": "WER 0.00"
+          }
+        ],
+        "wer": 0.0
+      },
+      {
+        "scene_index": 5,
+        "duration_s": 16.18,
+        "provider": "gemini",
+        "voice": "Kore",
+        "cache_hit": false,
+        "checks": [
+          {
+            "name": "A1",
+            "passed": true,
+            "value": 16.530958333333334,
+            "threshold": ">=0.5s mono 24000Hz",
+            "message": "ok"
+          },
+          {
+            "name": "A2",
+            "passed": true,
+            "value": 1.2257575757575758,
+            "threshold": "0.6-1.6",
+            "message": "duration 16.18 s vs expected 13.20 s"
+          },
+          {
+            "name": "A3",
+            "passed": true,
+            "value": -17.834165235433378,
+            "threshold": ">-35.0dBFS",
+            "message": "RMS -17.8 dBFS after trimming"
+          },
+          {
+            "name": "A4",
+            "passed": true,
+            "value": 0.0,
+            "threshold": "<1.5s",
+            "message": "0 internal silence(s), longest 0.00 s"
+          },
+          {
+            "name": "A5",
+            "passed": true,
+            "value": 0.058823529411764705,
+            "threshold": "report-only",
+            "message": "WER 0.06"
+          }
+        ],
+        "wer": 0.058823529411764705
+      }
+    ]
+  },
+  "media_qa": {
+    "passed": true,
+    "checks": [
+      {
+        "name": "Q1_video_stream",
+        "passed": true,
+        "value": [
+          [
+            "h264",
+            "yuv420p",
+            1280,
+            720,
+            "30/1"
+          ]
+        ],
+        "threshold": "one ('h264', 'yuv420p', 1280, 720, '30/1')",
+        "cause": null
+      },
+      {
+        "name": "Q1_audio_stream",
+        "passed": true,
+        "value": [
+          [
+            "aac",
+            "48000"
+          ]
+        ],
+        "threshold": "one ('aac', '48000')",
+        "cause": null
+      },
+      {
+        "name": "Q1_faststart",
+        "passed": true,
+        "value": null,
+        "threshold": "moov before mdat",
+        "cause": null
+      },
+      {
+        "name": "Q2_total_duration",
+        "passed": true,
+        "value": 100.9,
+        "threshold": "[40.0, 120.0] s",
+        "cause": null
+      },
+      {
+        "name": "Q2_av_sync",
+        "passed": true,
+        "value": 0.0,
+        "threshold": "<= 0.1 s",
+        "cause": null
+      },
+      {
+        "name": "Q2_plan_duration",
+        "passed": true,
+        "value": 0.0,
+        "threshold": "|actual - 100.900| <= 0.5 s",
+        "cause": null
+      },
+      {
+        "name": "Q3_mean_volume",
+        "passed": true,
+        "value": -16.7,
+        "threshold": "> -35.0 dB",
+        "cause": null
+      },
+      {
+        "name": "Q3_max_volume",
+        "passed": true,
+        "value": -1.4,
+        "threshold": "<= -1.0 dB",
+        "cause": null
+      },
+      {
+        "name": "Q3_loudness",
+        "passed": true,
+        "value": -16.2,
+        "threshold": "[-19.0, -13.0] LUFS",
+        "cause": null
+      },
+      {
+        "name": "Q3_silence",
+        "passed": true,
+        "value": 0.0,
+        "threshold": "<= 2.0 s outside planned padding",
+        "cause": null
+      },
+      {
+        "name": "Q4_black",
+        "passed": true,
+        "value": 0.0,
+        "threshold": "< 1.0 s",
+        "cause": null
+      },
+      {
+        "name": "Q4_freeze",
+        "passed": true,
+        "value": 0.0,
+        "threshold": "< 10.0 s",
+        "cause": null
+      },
+      {
+        "name": "Q5_luma_std",
+        "passed": true,
+        "value": [
+          28.23,
+          21.11,
+          22.96,
+          24.62,
+          26.88,
+          23.18
+        ],
+        "threshold": "> 8.0",
+        "cause": null
+      },
+      {
+        "name": "Q5_scene_hash_distance",
+        "passed": true,
+        "value": [
+          11,
+          12,
+          13,
+          14,
+          16
+        ],
+        "threshold": ">= 6 between neighbours of different visual types",
+        "cause": null
+      }
+    ]
+  }
+}

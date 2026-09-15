@@ -1,0 +1,80 @@
+{
+  "schema_version": "1",
+  "topic_id": "covalent_bonds",
+  "title": "Why Do Atoms Form Covalent Bonds?",
+  "learning_objective": "Understand that atoms form covalent bonds by sharing electrons to achieve a stable outer shell, typically between non-metal atoms.",
+  "scenes": [
+    {
+      "on_screen_title": "Why Covalent Bonds?",
+      "narration": "Have you ever wondered why atoms stick together to form molecules? It's all about stability! Atoms want to have a full outer shell of electrons, just like the noble gases. This makes them much more stable and less reactive.",
+      "visual": {
+        "type": "title_card",
+        "subtitle": "Atoms seeking stability"
+      }
+    },
+    {
+      "on_screen_title": "Sharing Electrons",
+      "narration": "Many atoms, especially non-metals, can achieve this stability by sharing electrons with other atoms. In a covalent bond, atoms share pairs of electrons. This is different from transferring electrons, which happens in ionic bonds.",
+      "visual": {
+        "type": "atom_shells",
+        "elements": [
+          "H",
+          "Cl"
+        ]
+      }
+    },
+    {
+      "on_screen_title": "The Shared Pair",
+      "narration": "Let's look at hydrogen chloride, HCl. The hydrogen atom shares one electron with the chlorine atom, and chlorine shares one back. This forms a shared pair. This sharing lets each atom reach a full, stable outer shell.",
+      "visual": {
+        "type": "electron_sharing",
+        "molecule": "HCl"
+      }
+    },
+    {
+      "on_screen_title": "Achieving Stability",
+      "narration": "For hydrogen, a full outer shell means two electrons. For chlorine, it means eight electrons, also known as an octet. By sharing, both atoms get what they need. This is the main reason covalent bonds form.",
+      "visual": {
+        "type": "atom_shells",
+        "elements": [
+          "H",
+          "H"
+        ]
+      }
+    },
+    {
+      "on_screen_title": "What Holds Them Together?",
+      "narration": "The shared pair of electrons isn't just floating between the atoms. It's strongly attracted to the positively charged nuclei of both atoms. This mutual attraction is what holds the atoms together in a covalent bond.",
+      "visual": {
+        "type": "comparison_table",
+        "left_header": "Covalent Bond",
+        "right_header": "Ionic Bond",
+        "rows": [
+          {
+            "aspect": "Electron Behavior",
+            "left": "Electrons are shared",
+            "right": "Electrons are transferred"
+          },
+          {
+            "aspect": "Typical Atoms",
+            "left": "Non-metals",
+            "right": "Metal + Non-metal"
+          }
+        ]
+      }
+    },
+    {
+      "on_screen_title": "Key Takeaways",
+      "narration": "Covalent bonds involve sharing electron pairs, usually between non-metal atoms. This sharing helps each atom achieve a stable, full outer shell. The shared electrons are attracted to both nuclei, holding the atoms together.",
+      "visual": {
+        "type": "key_points",
+        "points": [
+          "Atoms share electron pairs",
+          "Achieve stable outer shells",
+          "Form between non-metals",
+          "Shared electrons attract nuclei"
+        ]
+      }
+    }
+  ]
+}

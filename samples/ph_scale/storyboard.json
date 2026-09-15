@@ -1,0 +1,97 @@
+{
+  "schema_version": "1",
+  "topic_id": "ph_scale",
+  "title": "How the pH Scale Works",
+  "learning_objective": "Understand how the pH scale measures acidity and basicity, its range, and its logarithmic nature.",
+  "scenes": [
+    {
+      "on_screen_title": "What is pH?",
+      "narration": "Ever wondered why lemons are sour or soap feels slippery? It's all about pH! The pH scale measures how acidic or basic a solution is. Let's learn how it works.",
+      "visual": {
+        "type": "title_card",
+        "subtitle": "Understanding Acidity and Basicity"
+      }
+    },
+    {
+      "on_screen_title": "The pH Scale: Neutral",
+      "narration": "The pH scale usually runs from 0 to 14. A pH of exactly 7 is neutral. Pure water is a perfect example, being neither acidic nor basic.",
+      "visual": {
+        "type": "ph_scale",
+        "markers": [
+          "pure_water",
+          "milk"
+        ],
+        "highlight": "neutral"
+      }
+    },
+    {
+      "on_screen_title": "The pH Scale: Acidic",
+      "narration": "A solution with a pH below 7 is acidic. The lower the number, the stronger the acid. Lemon juice and vinegar are common acidic substances.",
+      "visual": {
+        "type": "ph_scale",
+        "markers": [
+          "lemon_juice",
+          "vinegar",
+          "stomach_acid"
+        ],
+        "highlight": "acidic"
+      }
+    },
+    {
+      "on_screen_title": "The pH Scale: Basic",
+      "narration": "A solution with a pH above 7 is basic, also known as alkaline. The higher the number, the stronger the base. Hand soap and baking soda are examples.",
+      "visual": {
+        "type": "ph_scale",
+        "markers": [
+          "hand_soap",
+          "baking_soda",
+          "drain_cleaner"
+        ],
+        "highlight": "basic"
+      }
+    },
+    {
+      "on_screen_title": "Measuring Hydrogen Ions",
+      "narration": "pH measures the concentration of hydrogen ions, or H+, in a solution. More H+ means more acidic, while fewer H+ means more basic. This determines the pH value.",
+      "visual": {
+        "type": "comparison_table",
+        "left_header": "More H+ Ions",
+        "right_header": "Fewer H+ Ions",
+        "rows": [
+          {
+            "aspect": "Acidity",
+            "left": "More acidic",
+            "right": "More basic"
+          },
+          {
+            "aspect": "pH Value",
+            "left": "Lower pH",
+            "right": "Higher pH"
+          }
+        ]
+      }
+    },
+    {
+      "on_screen_title": "A Logarithmic Scale",
+      "narration": "The pH scale is logarithmic. Each step of one pH unit is a tenfold change in hydrogen ion concentration. A solution with pH 3 is ten times more acidic than pH 4!",
+      "visual": {
+        "type": "log_ratio",
+        "from_ph": 3,
+        "to_ph": 4
+      }
+    },
+    {
+      "on_screen_title": "Key Takeaways",
+      "narration": "The pH scale helps us understand how acidic or basic substances are. It measures hydrogen ions, runs from 0 to 14, and each unit is a tenfold change.",
+      "visual": {
+        "type": "key_points",
+        "points": [
+          "pH measures H+ concentration",
+          "Scale runs from 0 to 14",
+          "Below 7 is acidic, above 7 is basic",
+          "Each unit is a tenfold change"
+        ]
+      }
+    }
+  ]
+}

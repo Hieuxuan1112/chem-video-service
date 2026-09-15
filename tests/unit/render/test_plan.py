@@ -13,6 +13,7 @@ from app.pipeline.storyboard import (
 )
 from app.render.plan import (
     Beat,
+    beat_targets,
     build_render_plan,
     compute_beats,
     frame_boundaries,
@@ -194,3 +195,17 @@ def test_question_is_raw_text_not_markup() -> None:
     assert plan.scenes[-1].visual.question == question  # type: ignore[union-attr]
     restored = type(plan).model_validate_json(plan.model_dump_json())
     assert restored == plan
+
+
+def test_log_ratio_panels_follow_concept_mentions_not_only_numbers() -> None:
+    narration = (
+        "The pH scale is logarithmic. Each step of one pH unit means ten times more hydrogen ions. "
+        "So a solution with pH 3 has ten times more hydrogen ions than a solution with pH 4."
+    )
+    visual = resolve_visual(LogRatio(type="log_ratio", from_ph=4, to_ph=3), question="q", title="t")
+    beats = compute_beats(narration, beat_targets(visual), lead_in_s=0.3, clip_s=10.0)
+
+    assert [b.target for b in beats] == ["from", "to", "ratio"]
+    times = [b.at_s for b in beats]
+    assert times == sorted(times) and len(set(times)) == 3
+    assert times[-1] < 0.3 + 10.0 * 0.5  # grids appear with the idea
